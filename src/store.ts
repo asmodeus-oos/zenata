@@ -65,6 +65,7 @@ interface ClinicalState {
     password?: string,
     avatarUrl?: string,
     specialty?: string,
+    assignedRoom?: string,
     days?: string[],
     hours?: string,
     role2?: UserRole
@@ -147,6 +148,7 @@ const initialUsers: User[] = [
     phone: "+1 (555) 123-4567",
     avatarUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80",
     specialty: "Practice Owner & Specialist",
+    assignedRoom: "Room 1",
     days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
     hours: "09:00 AM - 05:00 PM"
   }
@@ -156,6 +158,7 @@ const initialShifts: DoctorShift[] = [
   { 
     name: "Dr. Omnia Hosny", 
     specialty: "Practice Owner & Specialist", 
+    assignedRoom: "Room 1",
     days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], 
     hours: "09:00 AM - 05:00 PM", 
     isAvailable: true 
@@ -330,14 +333,14 @@ export const useStore = create<ClinicalState>()(
         signOut(auth).catch(() => {});
       },
 
-      registerStaff: (name, username, role, email = "", phone = "", _password = "", avatarUrl = "", specialty = "", days = [], hours = "", role2?: UserRole) => {
+      registerStaff: (name, username, role, email = "", phone = "", _password = "", avatarUrl = "", specialty = "", assignedRoom = "", days = [], hours = "", role2?: UserRole) => {
         const id = `usr-${Date.now()}`;
-        const newU: User = { id, name, username, role, role2, isActive: true, email, phone, avatarUrl, specialty, days, hours };
+        const newU: User = { id, name, username, role, role2, isActive: true, email, phone, avatarUrl, specialty, assignedRoom, days, hours };
         const isClinical = role === "clinician" || role === "doctor" || role2 === "clinician" || role2 === "doctor";
         set(state => ({ 
           users: [...state.users, newU],
           doctorShifts: isClinical 
-            ? [...state.doctorShifts, { name, specialty: specialty || "Clinician", days, hours, isAvailable: true }]
+            ? [...state.doctorShifts, { name, specialty: specialty || "Clinician", assignedRoom, days, hours, isAvailable: true }]
             : state.doctorShifts
         }));
         syncDoc("users", id, newU, OperationType.CREATE);
@@ -371,7 +374,7 @@ export const useStore = create<ClinicalState>()(
         set(state => ({
           users: state.users.map(u => u.id === userId ? { ...u, ...safe } : u),
           currentUser: state.currentUser?.id === userId ? { ...state.currentUser, ...safe } : state.currentUser,
-          doctorShifts: state.doctorShifts.map(s => s.name.toLowerCase() === target.name.toLowerCase() ? { ...s, name: safe.name || s.name, specialty: safe.specialty || s.specialty } : s)
+          doctorShifts: state.doctorShifts.map(s => s.name.toLowerCase() === target.name.toLowerCase() ? { ...s, name: safe.name || s.name, specialty: safe.specialty || s.specialty, assignedRoom: safe.assignedRoom || s.assignedRoom } : s)
         }));
         const final = get().users.find(u => u.id === userId);
         if (final) syncDoc("users", userId, final, OperationType.UPDATE);

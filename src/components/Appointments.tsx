@@ -172,7 +172,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
       .map((u, idx) => ({
         name: u.name,
         specialty: u.specialty || (u.role === "clinician" ? "Dental Clinician" : "Medical Practitioner"),
-        room: `Room ${idx + 1}`,
+        room: u.assignedRoom || `Room ${idx + 1}`,
         image: u.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=2563EB&color=fff&bold=true`
       }));
   }, [users]);

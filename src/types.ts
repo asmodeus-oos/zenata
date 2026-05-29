@@ -12,6 +12,7 @@ export interface User {
   phone?: string;
   avatarUrl?: string;
   specialty?: string;
+  assignedRoom?: string;
   days?: string[];
   hours?: string;
 }
@@ -256,6 +257,7 @@ export interface VersionedRecord<T> {
 export interface DoctorShift {
   name: string;
   specialty: string;
+  assignedRoom?: string;
   days: string[]; // e.g., Monday, Tuesday...
   hours: string; // "09:00 AM - 05:00 PM"
   isAvailable: boolean;

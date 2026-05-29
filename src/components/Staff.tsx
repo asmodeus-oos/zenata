@@ -60,6 +60,7 @@ export default function Staff() {
   const [ownPhone, setOwnPhone] = useState(currentUser?.phone || "");
   const [ownAvatarUrl, setOwnAvatarUrl] = useState(currentUser?.avatarUrl || "");
   const [ownSpecialty, setOwnSpecialty] = useState(currentUser?.specialty || "");
+  const [ownRoom, setOwnRoom] = useState(currentUser?.assignedRoom || "");
 
   // Own Password Rotation states
   const [ownCurrentPass, setOwnCurrentPass] = useState("");
@@ -81,6 +82,7 @@ export default function Staff() {
   const [wizPhone, setWizPhone] = useState("");
   const [wizPassword, setWizPassword] = useState("");
   const [wizSpecialty, setWizSpecialty] = useState("");
+  const [wizRoom, setWizRoom] = useState("Room 1");
   const [wizHours, setWizHours] = useState("09:00 AM - 05:00 PM");
   const [wizDays, setWizDays] = useState<string[]>(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]);
   const [wizAvatarUrl, setWizAvatarUrl] = useState("https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&w=150&q=80"); // default to Clara
@@ -96,6 +98,7 @@ export default function Staff() {
   const [editPassword, setEditPassword] = useState("");
   const [editAvatarUrl, setEditAvatarUrl] = useState("");
   const [editSpecialty, setEditSpecialty] = useState("");
+  const [editRoom, setEditRoom] = useState("");
   const [editHours, setEditHours] = useState("");
   const [editDays, setEditDays] = useState<string[]>([]);
 
@@ -113,6 +116,7 @@ export default function Staff() {
   
   const [sfName, setSfName] = useState("");
   const [sfSpecialty, setSfSpecialty] = useState("");
+  const [sfRoom, setSfRoom] = useState("");
   const [sfDays, setSfDays] = useState<string[]>(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]);
   const [sfHours, setSfHours] = useState("09:00 AM - 05:00 PM");
   const [sfIsAvailable, setSfIsAvailable] = useState(true);
@@ -177,7 +181,8 @@ export default function Staff() {
       email: ownEmail,
       phone: ownPhone,
       avatarUrl: ownAvatarUrl,
-      specialty: ownSpecialty
+      specialty: ownSpecialty,
+      assignedRoom: ownRoom
     });
     setProfileSuccess("Specification tokens updated successfully!");
     setTimeout(() => setProfileSuccess(""), 3000);
@@ -246,6 +251,7 @@ export default function Staff() {
       wizPassword || wizUsername,
       wizAvatarUrl,
       wizSpecialty || (wizRole === "clinician" ? "Dentist Specialist" : wizRole === "admin" ? "Practice Admin" : "Receptionist Office Clerk"),
+      wizRoom,
       wizDays,
       wizHours,
       wizRole2 === "none" ? undefined : wizRole2
@@ -278,6 +284,7 @@ export default function Staff() {
     setEditPassword(u.password || "");
     setEditAvatarUrl(u.avatarUrl || "");
     setEditSpecialty(u.specialty || "");
+    setEditRoom(u.assignedRoom || "");
     setEditHours(u.hours || "09:00 AM - 05:00 PM");
     setEditDays(u.days || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]);
   };
@@ -296,6 +303,7 @@ export default function Staff() {
       password: editPassword,
       avatarUrl: editAvatarUrl,
       specialty: editSpecialty,
+      assignedRoom: editRoom,
       hours: editHours,
       days: editDays
     });
@@ -318,6 +326,7 @@ export default function Staff() {
   const resetSfForm = () => {
     setSfName(users[0]?.name || "");
     setSfSpecialty(users[0]?.specialty || "Clinical Practitioner");
+    setSfRoom(users[0]?.assignedRoom || "");
     setSfDays(["Monday", "Wednesday", "Friday"]);
     setSfHours("09:00 AM - 05:00 PM");
     setSfIsAvailable(true);
@@ -332,6 +341,7 @@ export default function Staff() {
     const newShift: DoctorShift = {
       name: sfName,
       specialty: sfSpecialty || "Clinical Practitioner",
+      assignedRoom: sfRoom,
       days: sfDays,
       hours: sfHours || "09:00 AM - 05:00 PM",
       isAvailable: sfIsAvailable
@@ -347,6 +357,7 @@ export default function Staff() {
     setEditingShiftIndex(index);
     setSfName(shift.name);
     setSfSpecialty(shift.specialty);
+    setSfRoom(shift.assignedRoom || "");
     setSfDays(shift.days || []);
     setSfHours(shift.hours);
     setSfIsAvailable(shift.isAvailable);
@@ -358,6 +369,7 @@ export default function Staff() {
     const updatedShift: DoctorShift = {
       name: sfName,
       specialty: sfSpecialty,
+      assignedRoom: sfRoom,
       days: sfDays,
       hours: sfHours,
       isAvailable: sfIsAvailable
@@ -871,8 +883,9 @@ export default function Staff() {
                         setSfName(selectedName);
                         // Auto populate specialty based on chosen user if possible
                         const match = users.find(u => u.name === selectedName);
-                        if (match && match.specialty) {
-                          setSfSpecialty(match.specialty);
+                        if (match) {
+                          if (match.specialty) setSfSpecialty(match.specialty);
+                          if (match.assignedRoom) setSfRoom(match.assignedRoom);
                         }
                       }}
                       className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 font-semibold focus:ring-1 focus:ring-blue-500"
@@ -997,6 +1010,20 @@ export default function Staff() {
                       </button>
                     </div>
 
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 block">Physical Room Assignment</label>
+                      <select
+                        value={sfRoom}
+                        onChange={(e) => setSfRoom(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold cursor-pointer focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="">No room assigned</option>
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                          <option key={num} value={`Room ${num}`}>Room {num}</option>
+                        ))}
+                      </select>
+                    </div>
+
                     {/* FORM ACTION CONTROLS */}
                     <div className="flex gap-2.5 select-none pt-2">
                       <button
@@ -1069,7 +1096,7 @@ export default function Staff() {
                           )}
                         </div>
                         <p className="text-[10px] uppercase font-black text-blue-600 block mt-0.5 tracking-tight break-words">
-                          {shift.specialty}
+                          {shift.specialty} {shift.assignedRoom && `• ${shift.assignedRoom}`}
                         </p>
                       </div>
                     </div>
@@ -1590,8 +1617,21 @@ export default function Staff() {
                   onChange={(e) => setOwnAvatarUrl(e.target.value)}
                   className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all font-mono"
                 />
-              </div>
+                </div>
 
+                <div className="space-y-1.5">
+                <label className="text-[10px] uppercase font-bold text-slate-500">Physical Room Assignment</label>
+                <select
+                  value={ownRoom}
+                  onChange={(e) => setOwnRoom(e.target.value)}
+                  className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all font-bold cursor-pointer"
+                >
+                  <option value="">No room assigned</option>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                    <option key={num} value={`Room ${num}`}>Room {num}</option>
+                  ))}
+                </select>
+                </div>
               <div className="flex justify-between items-center pt-3 border-t border-slate-100">
                 <button
                   type="submit"
@@ -1957,6 +1997,20 @@ export default function Staff() {
                   onChange={(e) => setEditAvatarUrl(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-600 font-mono"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase font-bold text-slate-500">Physical Room Assignment</label>
+                <select
+                  value={editRoom}
+                  onChange={(e) => setEditRoom(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold cursor-pointer"
+                >
+                  <option value="">No room assigned</option>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                    <option key={num} value={`Room ${num}`}>Room {num}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Roster days multi selectors */}
