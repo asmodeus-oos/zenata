@@ -583,6 +583,12 @@ export default function Staff() {
                           <Mail size={10} className="text-slate-400 shrink-0" />
                           <span className="break-all text-slate-600">{usr.email || "No email listed"}</span>
                         </p>
+                        {usr.assignedRoom && (
+                          <p className="flex items-center gap-1 text-blue-600 font-bold mt-1 bg-blue-50/50 px-2 py-0.5 rounded-md border border-blue-100/50 w-fit">
+                            <MapPin size={10} className="shrink-0" />
+                            <span className="uppercase tracking-wider text-[9px]">{usr.assignedRoom}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1374,6 +1380,20 @@ export default function Staff() {
                       className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-bold"
                     />
                     <span className="text-[8px] text-slate-450 block">* Leave empty to dynamically generate specialty classification based on and relative to Security Role level</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500">Physical Room Assignment</label>
+                    <select
+                      value={wizRoom}
+                      onChange={(e) => setWizRoom(e.target.value)}
+                      className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-bold cursor-pointer"
+                    >
+                      <option value="">No room assigned</option>
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                        <option key={num} value={`Room ${num}`}>Room {num}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>
