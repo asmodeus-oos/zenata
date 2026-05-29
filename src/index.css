@@ -1,0 +1,439 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-slate-50: #f1f2fe;
+  --color-slate-55: #f1f2fe;
+  
+  --shadow-sm: 0 4px 16px rgba(15, 23, 42, 0.03), 0 2px 6px rgba(15, 23, 42, 0.02);
+  --shadow-md: 0 10px 24px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02);
+  --shadow-lg: 0 16px 36px rgba(15, 23, 42, 0.05), 0 6px 16px rgba(15, 23, 42, 0.03);
+  --shadow-xl: 0 24px 48px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 111.5%; /* Scales all rem units including cards, borders, inputs, margins, paddings, and utility texts by ~11.5% for superior legibility and spacious layout click targets */
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure smooth scrolling behavior on any scrollable elements */
+.scroll-smooth-container {
+  scroll-behavior: smooth;
+}
+
+/* Force upscale tiny font declarations used by the ERP to a highly readable size */
+.text-\[9px\] {
+  font-size: 0.775rem !important; /* Maps ~9px up to ~13.5px base */
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+.text-\[10px\] {
+  font-size: 0.825rem !important; /* Maps ~10px up to ~14.5px base */
+  letter-spacing: 0.03em;
+  font-weight: 600;
+}
+.text-\[11px\] {
+  font-size: 0.875rem !important; /* Maps ~11px up to ~15.5px base */
+}
+
+/* Ensure global readable base line height and weight on cards and text layout */
+body {
+  color: #1e293b; /* slate-800 */
+  line-height: 1.6;
+  background-color: #f1f2fe !important;
+}
+html.dark body {
+  color: #f8fafc; /* slate-50 */
+  background-color: #0f172a !important; /* slate-900 */
+}
+
+#clinic-master-viewport,
+#clinic-login-portal {
+  background-color: #f1f2fe !important;
+}
+html.dark #clinic-master-viewport,
+html.dark #clinic-login-portal {
+  background-color: #0f172a !important;
+}
+
+@layer utilities {
+  .frosted-bg {
+    background-color: #f1f2fe; /* solid #f1f2fe background */
+  }
+  html.dark .frosted-bg {
+    background-color: #0f172a;
+  }
+
+  .frosted-glass-sidebar {
+    background-color: #ffffff !important; /* pure white solid */
+    border-right: 1px solid rgba(226, 232, 240, 0.6) !important; /* slate-200 */
+    box-shadow: 10px 0 30px rgba(15, 23, 42, 0.03), 4px 0 12px rgba(15, 23, 42, 0.02) !important;
+  }
+  html.dark .frosted-glass-sidebar {
+    background-color: #1e293b !important; /* slate-800 */
+    border-right: 1px solid rgba(51, 65, 85, 0.6) !important; /* slate-700 */
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .frosted-glass-card {
+    background-color: #ffffff !important; /* pure white solid */
+    border: 1px solid rgba(226, 232, 240, 0.6) !important; /* slate-200 */
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+  }
+  html.dark .frosted-glass-card {
+    background-color: #1e293b !important;
+    border: 1px solid rgba(51, 65, 85, 0.6) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .frosted-glass-card-hover {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .frosted-glass-card-hover:hover {
+    background-color: #ffffff !important;
+    border-color: rgba(203, 213, 225, 0.8) !important; /* slate-300 */
+    box-shadow: 0 20px 36px rgba(15, 23, 42, 0.07), 0 8px 16px rgba(15, 23, 42, 0.04) !important;
+    transform: translateY(-2px);
+  }
+  html.dark .frosted-glass-card-hover:hover {
+    background-color: #1e293b !important;
+    border-color: rgba(71, 85, 105, 0.8) !important;
+    box-shadow: 0 20px 36px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .frosted-glass-panel {
+    background-color: #ffffff !important; /* pure white solid */
+    border: 1px solid rgba(226, 232, 240, 0.6) !important; /* slate-200 */
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+  }
+  html.dark .frosted-glass-panel {
+    background-color: #1e293b !important;
+    border: 1px solid rgba(51, 65, 85, 0.6) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  /* Elevate custom cards globally with pure white background, soft borders, and smooth elevated shadow */
+  aside,
+  [class*="rounded-[28px]"],
+  [class*="rounded-[32px]"] {
+    background-color: #ffffff !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+    border: 1px solid rgba(226, 232, 240, 0.6) !important;
+  }
+  html.dark aside,
+  html.dark [class*="rounded-[28px]"],
+  html.dark [class*="rounded-[32px]"] {
+    background-color: #1e293b !important; /* slate-800 */
+    border: 1px solid rgba(51, 65, 85, 0.6) !important; /* slate-700 */
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .frosted-glass-input {
+    background-color: #ffffff; /* pure white solid */
+    border: 1px solid #cbd5e1; /* slate-300 */
+    transition: all 0.2s ease;
+  }
+  html.dark .frosted-glass-input {
+    background-color: #334155;
+    border: 1px solid #475569;
+    color: #ffffff;
+  }
+  .frosted-glass-input:focus {
+    background-color: #ffffff;
+    border-color: #3b82f6; /* blue-500 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  }
+  html.dark .frosted-glass-input:focus {
+    background-color: #1e293b;
+    border-color: #3b82f6;
+  }
+
+  .frosted-glass-modal {
+    background-color: #ffffff !important; /* pure white solid */
+    border: 1px solid rgba(203, 213, 225, 0.8) !important; /* slate-300 */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12) !important;
+  }
+  html.dark .frosted-glass-modal {
+    background-color: #1e293b !important;
+    border: 1px solid rgba(71, 85, 105, 0.8) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+  }
+}
+
+/* Enable smooth scrolling globally across the entire interface */
+html,
+body,
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto,
+.custom-scrollbar,
+textarea,
+pre {
+  scroll-behavior: smooth !important;
+}
+
+/* modern visible scrollbars for scrollable elements, forms, sections, and tables */
+html,
+body,
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto,
+.custom-scrollbar,
+textarea,
+pre {
+  scrollbar-width: thin !important; /* Firefox: elegant narrow scrollbar */
+  scrollbar-color: rgba(99, 102, 241, 0.4) rgba(241, 245, 249, 0.1) !important;
+  -ms-overflow-style: auto !important; /* IE 10+ */
+}
+
+/* Firefox Focus and Hover reactive colors for specific scrollable elements only */
+.overflow-auto:hover, .overflow-auto:focus, .overflow-auto:focus-within,
+.overflow-y-auto:hover, .overflow-y-auto:focus, .overflow-y-auto:focus-within,
+.overflow-x-auto:hover, .overflow-x-auto:focus, .overflow-x-auto:focus-within,
+.custom-scrollbar:hover, .custom-scrollbar:focus, .custom-scrollbar:focus-within,
+html:hover, html:focus, html:focus-within,
+body:hover, body:focus, body:focus-within,
+textarea:hover, textarea:focus, textarea:focus-within,
+pre:hover, pre:focus, pre:focus-within {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(79, 70, 229, 0.85) rgba(241, 245, 249, 0.4) !important;
+}
+
+/* Firefox Active clicked state of the scrollbar */
+.overflow-auto:active,
+.overflow-y-auto:active,
+.overflow-x-auto:active,
+.custom-scrollbar:active,
+html:active,
+body:active,
+textarea:active,
+pre:active {
+  scrollbar-color: rgba(67, 56, 202, 0.98) rgba(241, 245, 249, 0.5) !important;
+}
+
+html.dark html,
+html.dark body,
+html.dark .overflow-auto,
+html.dark .overflow-y-auto,
+html.dark .overflow-x-auto,
+html.dark .custom-scrollbar,
+html.dark textarea,
+html.dark pre {
+  scrollbar-color: rgba(129, 140, 248, 0.45) rgba(15, 23, 42, 0.1) !important;
+}
+
+html.dark .overflow-auto:hover, html.dark .overflow-auto:focus, html.dark .overflow-auto:focus-within,
+html.dark .overflow-y-auto:hover, html.dark .overflow-y-auto:focus, html.dark .overflow-y-auto:focus-within,
+html.dark .overflow-x-auto:hover, html.dark .overflow-x-auto:focus, html.dark .overflow-x-auto:focus-within,
+html.dark .custom-scrollbar:hover, html.dark .custom-scrollbar:focus, html.dark .custom-scrollbar:focus-within,
+html.dark html:hover, html.dark html:focus, html.dark html:focus-within,
+html.dark body:hover, html.dark body:focus, html.dark body:focus-within,
+html.dark textarea:hover, html.dark textarea:focus, html.dark textarea:focus-within,
+html.dark pre:hover, html.dark pre:focus, html.dark pre:focus-within {
+  scrollbar-color: rgba(129, 140, 248, 0.85) rgba(15, 23, 42, 0.4) !important;
+}
+
+html.dark .overflow-auto:active,
+html.dark .overflow-y-auto:active,
+html.dark .overflow-x-auto:active,
+html.dark .custom-scrollbar:active,
+html.dark html:active,
+html.dark body:active,
+html.dark textarea:active,
+html.dark pre:active {
+  scrollbar-color: rgba(165, 180, 252, 0.98) rgba(15, 23, 42, 0.5) !important;
+}
+
+/* Chrome, Safari, and Edge display custom thin scrollbars with elegant circular tracks */
+::-webkit-scrollbar {
+  display: block !important;
+  width: 5px !important;
+  height: 5px !important;
+}
+
+/* Rounded, fluid track stylings */
+::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.2) !important;
+  border-radius: 9999px !important;
+}
+
+/* Active or focused container track effects styled precisely */
+.overflow-auto:hover::-webkit-scrollbar-track, .overflow-auto:focus::-webkit-scrollbar-track, .overflow-auto:focus-within::-webkit-scrollbar-track,
+.overflow-y-auto:hover::-webkit-scrollbar-track, .overflow-y-auto:focus::-webkit-scrollbar-track, .overflow-y-auto:focus-within::-webkit-scrollbar-track,
+.overflow-x-auto:hover::-webkit-scrollbar-track, .overflow-x-auto:focus::-webkit-scrollbar-track, .overflow-x-auto:focus-within::-webkit-scrollbar-track,
+.custom-scrollbar:hover::-webkit-scrollbar-track, .custom-scrollbar:focus::-webkit-scrollbar-track, .custom-scrollbar:focus-within::-webkit-scrollbar-track,
+html:hover::-webkit-scrollbar-track, html:focus::-webkit-scrollbar-track, html:focus-within::-webkit-scrollbar-track,
+body:hover::-webkit-scrollbar-track, body:focus::-webkit-scrollbar-track, body:focus-within::-webkit-scrollbar-track,
+textarea:hover::-webkit-scrollbar-track, textarea:focus::-webkit-scrollbar-track, textarea:focus-within::-webkit-scrollbar-track,
+pre:hover::-webkit-scrollbar-track, pre:focus::-webkit-scrollbar-track, pre:focus-within::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.6) !important;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.2) !important;
+}
+
+html.dark .overflow-auto:hover::-webkit-scrollbar-track, html.dark .overflow-auto:focus::-webkit-scrollbar-track, html.dark .overflow-auto:focus-within::-webkit-scrollbar-track,
+html.dark .overflow-y-auto:hover::-webkit-scrollbar-track, html.dark .overflow-y-auto:focus::-webkit-scrollbar-track, html.dark .overflow-y-auto:focus-within::-webkit-scrollbar-track,
+html.dark .overflow-x-auto:hover::-webkit-scrollbar-track, html.dark .overflow-x-auto:focus::-webkit-scrollbar-track, html.dark .overflow-x-auto:focus-within::-webkit-scrollbar-track,
+html.dark .custom-scrollbar:hover::-webkit-scrollbar-track, html.dark .custom-scrollbar:focus::-webkit-scrollbar-track, html.dark .custom-scrollbar:focus-within::-webkit-scrollbar-track,
+html.dark html:hover::-webkit-scrollbar-track, html.dark html:focus::-webkit-scrollbar-track, html.dark html:focus-within::-webkit-scrollbar-track,
+html.dark body:hover::-webkit-scrollbar-track, html.dark body:focus::-webkit-scrollbar-track, html.dark body:focus-within::-webkit-scrollbar-track,
+html.dark textarea:hover::-webkit-scrollbar-track, html.dark textarea:focus::-webkit-scrollbar-track, html.dark textarea:focus-within::-webkit-scrollbar-track,
+html.dark pre:hover::-webkit-scrollbar-track, html.dark pre:focus::-webkit-scrollbar-track, html.dark pre:focus-within::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.7) !important;
+}
+
+/* Pill-shaped, accented gradient thumb with smooth transition effect */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.35), rgba(59, 130, 246, 0.35)) !important;
+  border-radius: 9999px !important;
+  border: none !important;
+}
+
+/* Elevate thumb prominence index when container is hovered or focused */
+.overflow-auto:hover::-webkit-scrollbar-thumb, .overflow-auto:focus::-webkit-scrollbar-thumb, .overflow-auto:focus-within::-webkit-scrollbar-thumb,
+.overflow-y-auto:hover::-webkit-scrollbar-thumb, .overflow-y-auto:focus::-webkit-scrollbar-thumb, .overflow-y-auto:focus-within::-webkit-scrollbar-thumb,
+.overflow-x-auto:hover::-webkit-scrollbar-thumb, .overflow-x-auto:focus::-webkit-scrollbar-thumb, .overflow-x-auto:focus-within::-webkit-scrollbar-thumb,
+.custom-scrollbar:hover::-webkit-scrollbar-thumb, .custom-scrollbar:focus::-webkit-scrollbar-thumb, .custom-scrollbar:focus-within::-webkit-scrollbar-thumb,
+html:hover::-webkit-scrollbar-thumb, html:focus::-webkit-scrollbar-thumb, html:focus-within::-webkit-scrollbar-thumb,
+body:hover::-webkit-scrollbar-thumb, body:focus::-webkit-scrollbar-thumb, body:focus-within::-webkit-scrollbar-thumb,
+textarea:hover::-webkit-scrollbar-thumb, textarea:focus::-webkit-scrollbar-thumb, textarea:focus-within::-webkit-scrollbar-thumb,
+pre:hover::-webkit-scrollbar-thumb, pre:focus::-webkit-scrollbar-thumb, pre:focus-within::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.75), rgba(59, 130, 246, 0.75)) !important;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(129, 140, 248, 0.4), rgba(96, 165, 250, 0.4)) !important;
+}
+
+html.dark .overflow-auto:hover::-webkit-scrollbar-thumb, html.dark .overflow-auto:focus::-webkit-scrollbar-thumb, html.dark .overflow-auto:focus-within::-webkit-scrollbar-thumb,
+html.dark .overflow-y-auto:hover::-webkit-scrollbar-thumb, html.dark .overflow-y-auto:focus::-webkit-scrollbar-thumb, html.dark .overflow-y-auto:focus-within::-webkit-scrollbar-thumb,
+html.dark .overflow-x-auto:hover::-webkit-scrollbar-thumb, html.dark .overflow-x-auto:focus::-webkit-scrollbar-thumb, html.dark .overflow-x-auto:focus-within::-webkit-scrollbar-thumb,
+html.dark .custom-scrollbar:hover::-webkit-scrollbar-thumb, html.dark .custom-scrollbar:focus::-webkit-scrollbar-thumb, html.dark .custom-scrollbar:focus-within::-webkit-scrollbar-thumb,
+html.dark html:hover::-webkit-scrollbar-thumb, html.dark html:focus::-webkit-scrollbar-thumb, html.dark html:focus-within::-webkit-scrollbar-thumb,
+html.dark body:hover::-webkit-scrollbar-thumb, html.dark body:focus::-webkit-scrollbar-thumb, html.dark body:focus-within::-webkit-scrollbar-thumb,
+html.dark textarea:hover::-webkit-scrollbar-thumb, html.dark textarea:focus::-webkit-scrollbar-thumb, html.dark textarea:focus-within::-webkit-scrollbar-thumb,
+html.dark pre:hover::-webkit-scrollbar-thumb, html.dark pre:focus::-webkit-scrollbar-thumb, html.dark pre:focus-within::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(129, 140, 248, 0.75), rgba(96, 165, 250, 0.75)) !important;
+}
+
+/* Intense gradient and glowing neon shadow effect when direct user cursor is hovering scrollbar thumb */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(79, 70, 229, 0.95), rgba(37, 99, 235, 0.95)) !important;
+  box-shadow: 0 0 6px rgba(99, 102, 241, 0.8) !important;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(129, 140, 248, 0.95), rgba(96, 165, 250, 0.95)) !important;
+  box-shadow: 0 0 8px rgba(129, 140, 248, 0.9) !important;
+}
+
+/* Dynamic active state when thumb is clicked and dragged for scrolling */
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, rgba(67, 56, 202, 1), rgba(29, 78, 216, 1)) !important;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.95) !important;
+}
+
+html.dark ::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, rgba(165, 180, 252, 1), rgba(147, 197, 253, 1)) !important;
+  box-shadow: 0 0 12px rgba(129, 140, 248, 0.95) !important;
+}
+
+/* Custom interactive webkit scrollbar arrow buttons styled to match the theme */
+::-webkit-scrollbar-button {
+  display: block !important;
+  background-size: 60% 60% !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  width: 5px !important;
+  height: 5px !important;
+  background-color: transparent !important;
+  opacity: 0.5 !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
+}
+
+::-webkit-scrollbar-button:hover {
+  opacity: 1 !important;
+  background-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+html.dark ::-webkit-scrollbar-button:hover {
+  background-color: rgba(129, 140, 248, 0.35) !important;
+}
+
+::-webkit-scrollbar-button:active {
+  opacity: 1 !important;
+  background-color: rgba(67, 56, 202, 0.6) !important;
+}
+
+html.dark ::-webkit-scrollbar-button:active {
+  background-color: rgba(129, 140, 248, 0.6) !important;
+}
+
+/* Accurate vector arrows depending on placement direction */
+/* Vertical Decrement (Up Arrow) */
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='18 15 12 9 6 15'></polyline></svg>") !important;
+}
+
+html.dark ::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='18 15 12 9 6 15'></polyline></svg>") !important;
+}
+
+/* Vertical Increment (Down Arrow) */
+::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>") !important;
+}
+
+html.dark ::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>") !important;
+}
+
+/* Horizontal Decrement (Left Arrow) */
+::-webkit-scrollbar-button:single-button:horizontal:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='15 18 9 12 15 6'></polyline></svg>") !important;
+}
+
+html.dark ::-webkit-scrollbar-button:single-button:horizontal:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='15 18 9 12 15 6'></polyline></svg>") !important;
+}
+
+/* Horizontal Increment (Right Arrow) */
+::-webkit-scrollbar-button:single-button:horizontal:increment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 18 15 12 9 6'></polyline></svg>") !important;
+}
+
+/* Subtle 2-second pulse animation on inventory items under threshold under #inventory-module-container */
+@keyframes inventory-pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+#inventory-module-container .low-stock-pulse {
+  animation: inventory-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#inventory-module-container .normal-stock-static {
+  animation: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
