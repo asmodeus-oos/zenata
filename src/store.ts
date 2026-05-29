@@ -156,7 +156,7 @@ const initialUsers: User[] = [
 
 const initialShifts: DoctorShift[] = [
   { 
-    name: "Dr. Omnia Hosny", 
+    name: "Dr. Omnia Hossam", 
     specialty: "Practice Owner & Specialist", 
     assignedRoom: "Room 1",
     days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], 
@@ -585,7 +585,7 @@ export const useStore = create<ClinicalState>()(
       emergencyReset: () => set({ currentUser: initialUsers[0], users: initialUsers, patients: initialPatients, appointments: initialAppointments, financialRecords: initialFinancials, doctorShifts: initialShifts, inventory: initialInventory, activityLogs: initialLogs, clinicSettings: initialSettings })
     }),
     {
-      name: "zendenta-erp-storage-v2",
+      name: "zendenta-erp-storage-v3",
       partialize: (state) => {
         const { currentUser, isSyncActive, ...rest } = state;
         return rest;
@@ -593,3 +593,4 @@ export const useStore = create<ClinicalState>()(
     }
   )
 );
+
