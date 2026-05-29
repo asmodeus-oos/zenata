@@ -582,7 +582,7 @@ export const useStore = create<ClinicalState>()(
       emergencyReset: () => set({ currentUser: initialUsers[0], users: initialUsers, patients: initialPatients, appointments: initialAppointments, financialRecords: initialFinancials, doctorShifts: initialShifts, inventory: initialInventory, activityLogs: initialLogs, clinicSettings: initialSettings })
     }),
     {
-      name: "zendenta-erp-storage",
+      name: "zendenta-erp-storage-v2",
       partialize: (state) => {
         const { currentUser, isSyncActive, ...rest } = state;
         return rest;

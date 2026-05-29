@@ -378,7 +378,7 @@ export default function Staff() {
   // Pre-designed top-quality physician profile pictures available for wizard selection
   const avatarPresets = [
     { name: "Dr. Clara Mendes (Cosmetic)", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTps0OO8oAWRbrzOtvHKdziTYj5UqTM7fKITg&s" },
-    { name: "Dr. Alexander Thorne (Surgeon)", url: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80" },
+    { name: "Dr. Omnia Hosny (Owner)", url: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80" },
     { name: "Dr. Robert Pires (Prosthetics)", url: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=150&q=80" },
     { name: "Sarah Connor Clerk Style", url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80" },
     { name: "Dr. Bruce Wayne (Orthodontics)", url: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=150&q=80" }

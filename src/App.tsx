@@ -42,10 +42,16 @@ export default function App() {
     if (currentUser && !hasShownWelcome) {
       setShowWelcome(true);
       setHasShownWelcome(true);
-      const timer = setTimeout(() => setShowWelcome(false), 3500);
-      return () => clearTimeout(timer);
     }
   }, [currentUser, hasShownWelcome]);
+
+  // Separate timer for stable dismissal
+  React.useEffect(() => {
+    if (showWelcome) {
+      const timer = setTimeout(() => setShowWelcome(false), 3800);
+      return () => clearTimeout(timer);
+    }
+  }, [showWelcome]);
 
   // Derived current user name from users list to ensure dynamic sync
   const welcomeName = React.useMemo(() => {

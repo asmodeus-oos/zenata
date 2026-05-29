@@ -102,7 +102,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
   const [chiefComplaint, setChiefComplaint] = useState("");
   const [quickNotes, setQuickNotes] = useState("");
   const [patientImageUrl, setPatientImageUrl] = useState("");
-  const [selectedDoctor, setSelectedDoctor] = useState("Dr. Alexander Thorne");
+  const [selectedDoctor, setSelectedDoctor] = useState("Dr. Omnia Hosny");
 
   // Helper to adjust time segments
   const adjustHour = (delta: number) => {
