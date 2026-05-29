@@ -137,13 +137,13 @@ interface ClinicalState {
 const initialUsers: User[] = [
   { 
     id: "usr-1", 
-    name: "Dr. Alexander Thorne", 
+    name: "Dr. Omnia Hosny", 
     username: "admin", 
     role: "admin", 
     role2: "doctor", 
     password: "owner123", 
     isActive: true, 
-    email: "alexander.thorne@zendenta.com", 
+    email: "omnia.hosny@zendenta.com", 
     phone: "+1 (555) 123-4567",
     avatarUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80",
     specialty: "Practice Owner & Specialist",
@@ -154,7 +154,7 @@ const initialUsers: User[] = [
 
 const initialShifts: DoctorShift[] = [
   { 
-    name: "Dr. Alexander Thorne", 
+    name: "Dr. Omnia Hosny", 
     specialty: "Practice Owner & Specialist", 
     days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], 
     hours: "09:00 AM - 05:00 PM", 
