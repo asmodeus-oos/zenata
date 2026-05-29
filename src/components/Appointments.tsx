@@ -286,8 +286,8 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
   };
 
   const currentDoctorObj = useMemo(() => {
-    return doctorDetails.find(d => d.name === selectedDoctor) || doctorDetails[0];
-  }, [selectedDoctor]);
+    return doctorDetails.find(d => d.name === selectedDoctor) || doctorDetails[0] || { room: "Examination Room" };
+  }, [selectedDoctor, doctorDetails]);
 
   // Filter list of schedules
   const sortedAppointments = useMemo(() => {

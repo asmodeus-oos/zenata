@@ -140,6 +140,7 @@ const initialUsers: User[] = [
     name: "Dr. Alexander Thorne", 
     username: "admin", 
     role: "admin", 
+    role2: "doctor", 
     password: "owner123", 
     isActive: true, 
     email: "alexander.thorne@zendenta.com", 
