@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useStore } from "./store";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
@@ -31,6 +32,20 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+
+  // Welcome Screen state
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [hasShownWelcome, setHasShownWelcome] = useState(false);
+
+  // Auto trigger welcome screen when user logs in
+  React.useEffect(() => {
+    if (currentUser && !hasShownWelcome) {
+      setShowWelcome(true);
+      setHasShownWelcome(true);
+      const timer = setTimeout(() => setShowWelcome(false), 3200);
+      return () => clearTimeout(timer);
+    }
+  }, [currentUser, hasShownWelcome]);
 
   // Monitor Firebase Authentication state and synchronize with clinic context
   React.useEffect(() => {
@@ -356,6 +371,49 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-55 overflow-hidden flex" id="clinic-master-viewport">
+      <AnimatePresence>
+        {showWelcome && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-[1000] bg-white flex flex-col items-center justify-center pointer-events-none"
+          >
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
+              className="text-center"
+            >
+              <h1 className="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter mb-4">
+                Hello.
+              </h1>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
+                className="flex flex-col items-center"
+              >
+                <div className="w-16 h-1 bg-blue-600 rounded-full mb-6" />
+                <span className="text-xl md:text-2xl font-bold text-slate-500 uppercase tracking-[0.3em] ml-2">
+                  {currentUser?.name || "Practitioner"}
+                </span>
+              </motion.div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              transition={{ delay: 1.5, duration: 1 }}
+              className="absolute bottom-12 text-[10px] font-black uppercase tracking-widest text-slate-400"
+            >
+              Zendenta Clinical Intelligence • Secure Boot Active
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* PERSISTENT SIDEBAR Drawer */}
       <Sidebar 
         activeTab={activeTab} 
