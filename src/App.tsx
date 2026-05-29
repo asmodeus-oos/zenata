@@ -42,10 +42,17 @@ export default function App() {
     if (currentUser && !hasShownWelcome) {
       setShowWelcome(true);
       setHasShownWelcome(true);
-      const timer = setTimeout(() => setShowWelcome(false), 3200);
+      const timer = setTimeout(() => setShowWelcome(false), 3500);
       return () => clearTimeout(timer);
     }
   }, [currentUser, hasShownWelcome]);
+
+  // Derived current user name from users list to ensure dynamic sync
+  const welcomeName = React.useMemo(() => {
+    if (!currentUser) return "Practitioner";
+    const liveMatch = users.find(u => u.id === currentUser.id);
+    return liveMatch ? liveMatch.name : currentUser.name;
+  }, [currentUser, users]);
 
   // Monitor Firebase Authentication state and synchronize with clinic context
   React.useEffect(() => {
@@ -390,14 +397,14 @@ export default function App() {
                 Hello.
               </h1>
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.8, duration: 0.6 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 className="flex flex-col items-center"
               >
-                <div className="w-16 h-1 bg-blue-600 rounded-full mb-6" />
-                <span className="text-xl md:text-2xl font-bold text-slate-500 uppercase tracking-[0.3em] ml-2">
-                  {currentUser?.name || "Practitioner"}
+                <div className="w-16 h-1 bg-blue-600 rounded-full mb-6 shadow-[0_0_15px_rgba(37,99,235,0.4)]" />
+                <span className="text-xl md:text-2xl font-bold text-slate-500 uppercase tracking-[0.4em] ml-3">
+                  {welcomeName}
                 </span>
               </motion.div>
             </motion.div>
