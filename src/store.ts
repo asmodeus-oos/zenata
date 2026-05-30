@@ -138,13 +138,13 @@ interface ClinicalState {
 const initialUsers: User[] = [
   { 
     id: "usr-1", 
-    name: "Dr. Omnia Hosny", 
+    name: "Dr. Omnia Hossam", 
     username: "admin", 
     role: "admin", 
     role2: "doctor", 
     password: "owner123", 
     isActive: true, 
-    email: "omnia.hosny@zendenta.com", 
+    email: "omnia.hossam@zendenta.com", 
     phone: "+1 (555) 123-4567",
     avatarUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80",
     specialty: "Practice Owner & Specialist",
@@ -585,7 +585,7 @@ export const useStore = create<ClinicalState>()(
       emergencyReset: () => set({ currentUser: initialUsers[0], users: initialUsers, patients: initialPatients, appointments: initialAppointments, financialRecords: initialFinancials, doctorShifts: initialShifts, inventory: initialInventory, activityLogs: initialLogs, clinicSettings: initialSettings })
     }),
     {
-      name: "zendenta-erp-storage-v3",
+      name: "zendenta-erp-storage-v4",
       partialize: (state) => {
         const { currentUser, isSyncActive, ...rest } = state;
         return rest;
