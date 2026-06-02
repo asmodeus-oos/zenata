@@ -140,6 +140,8 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
   const [totalFee, setTotalFee] = useState<number>(100);
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [receiptAttached, setReceiptAttached] = useState(false);
+  const [receiptFileName, setReceiptFileName] = useState("");
+  const [receiptFileContent, setReceiptFileContent] = useState("");
 
   // Available common medical issues checklist
   const commonMedicalIssues = [
@@ -248,9 +250,24 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
         gender: sex,
         orthoNotes: `Chief Complaint: ${chiefComplaint || "Routine dental survey requested."}`,
         riskLevel: medicalChecklist.includes("High Blood Pressure") ? "High" : medicalChecklist.length > 2 ? "Moderate" : "Low",
-        allergies: medicalChecklist.includes("Allergy - Penicillin") ? "Penicillin" : "None"
+        allergies: medicalChecklist.includes("Allergy - Penicillin") ? "Penicillin" : "None",
+        avatarUrl: patientImageUrl || undefined,
+        whatsapp: whatsApp || undefined
       });
       finalPatientId = onboardedId;
+    }
+
+    // Log the reservation payment to financialRecords as income
+    if (totalFee > 0 || paidAmount > 0) {
+      addClinicalIncomeRecord(finalPatientId, {
+        procedureName: `Reservation: ${procedureType}`,
+        totalCost: totalFee,
+        paidAmount: paidAmount,
+        paymentMethod: billingType,
+        notes: `Booking reservation fee for appointment on ${bookingDate} ${bookingTime}`,
+        receiptFileName: receiptFileName || undefined,
+        receiptFileContent: receiptFileContent || undefined
+      });
     }
 
     // 2. Add key Appointment Record
@@ -283,6 +300,10 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
     setTotalFee(100);
     setPaidAmount(0);
     setPatientSearch("");
+    setPatientImageUrl("");
+    setReceiptAttached(false);
+    setReceiptFileName("");
+    setReceiptFileContent("");
   };
 
   const currentDoctorObj = useMemo(() => {
@@ -768,10 +789,33 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                       onChange={(e) => setPatientImageUrl(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-semibold text-center bg-white"
                     />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="patient-avatar-upload"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setPatientImageUrl(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById("patient-avatar-upload")?.click()}
+                      className="px-4 py-2 border border-blue-205 bg-blue-50 text-blue-700 text-xs font-extrabold rounded-xl w-full hover:bg-blue-100 cursor-pointer text-center"
+                    >
+                      Upload from PC
+                    </button>
                     <button
                       type="button"
                       onClick={() => setPatientImageUrl("https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80")}
-                      className="px-4 py-2 border border-slate-200 bg-white text-slate-700 text-xs font-extrabold rounded-xl w-full hover:bg-slate-100"
+                      className="px-4 py-2 border border-slate-200 bg-white text-slate-700 text-xs font-extrabold rounded-xl w-full hover:bg-slate-100 cursor-pointer"
                     >
                       Attach Female Mock
                     </button>
@@ -1353,21 +1397,71 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                 <div className="p-4 bg-slate-50/85 border border-slate-200 rounded-[24px] space-y-3.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs uppercase font-extrabold text-slate-500 font-bold block">Optional Receipt Verification File</span>
-                    <span className="text-[10px] text-slate-400 font-mono">Attachment lock active</span>
+                    <span className="text-[10px] text-slate-400 font-mono">PC Attachment active</span>
                   </div>
                   <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center space-y-2 bg-white">
                     <p className="text-xs text-slate-550 font-bold">Drag receipts here or click to browse files.</p>
-                    <button
-                      type="button"
-                      onClick={() => setReceiptAttached(!receiptAttached)}
-                      className={`px-4 py-2 font-black text-xs rounded-lg transition-all ${
-                        receiptAttached 
-                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300" 
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
-                    >
-                      {receiptAttached ? "✓ Physical Receipt Scanned" : "Attach Dummy Image receipt.pdf"}
-                    </button>
+                    <input
+                      type="file"
+                      id="appointment-receipt-upload"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setReceiptFileName(file.name);
+                          setReceiptAttached(true);
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setReceiptFileContent(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById("appointment-receipt-upload")?.click()}
+                        className={`px-4 py-2 font-black text-xs rounded-lg transition-all cursor-pointer ${
+                          receiptFileName 
+                            ? "bg-emerald-100 text-emerald-800 border border-emerald-300" 
+                            : "bg-blue-600 text-white hover:bg-blue-700"
+                        }`}
+                      >
+                        {receiptFileName ? `✓ ${receiptFileName}` : "Upload Receipt from PC"}
+                      </button>
+                      
+                      {!receiptFileName && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReceiptFileName("receipt.pdf");
+                            setReceiptAttached(true);
+                            setReceiptFileContent("dummy-pdf-content");
+                          }}
+                          className="px-4 py-2 font-black text-xs rounded-lg bg-slate-100 text-slate-650 hover:bg-slate-200 cursor-pointer"
+                        >
+                          Attach Dummy receipt.pdf
+                        </button>
+                      )}
+
+                      {receiptFileName && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReceiptFileName("");
+                            setReceiptAttached(false);
+                            setReceiptFileContent("");
+                            if (document.getElementById("appointment-receipt-upload")) {
+                              (document.getElementById("appointment-receipt-upload") as HTMLInputElement).value = "";
+                            }
+                          }}
+                          className="px-2 py-2 font-black text-xs rounded-lg bg-rose-100 text-rose-700 hover:bg-rose-200 cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 

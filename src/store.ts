@@ -96,6 +96,8 @@ interface ClinicalState {
     paidAmount: number;
     paymentMethod: "Cash" | "Card" | "Bank Transfer";
     notes?: string;
+    receiptFileName?: string;
+    receiptFileContent?: string;
   }) => void;
   addPayment: (patientId: string, prostheticId: string, amount: number, paymentMethod: "Cash" | "Card" | "Bank Transfer") => void;
   addPaymentRecord: (item: FinancialRecord) => void; // internal use
@@ -374,7 +376,7 @@ export const useStore = create<ClinicalState>()(
         set(state => ({
           users: state.users.map(u => u.id === userId ? { ...u, ...safe } : u),
           currentUser: state.currentUser?.id === userId ? { ...state.currentUser, ...safe } : state.currentUser,
-          doctorShifts: state.doctorShifts.map(s => s.name.toLowerCase() === target.name.toLowerCase() ? { ...s, name: safe.name || s.name, specialty: safe.specialty || s.specialty, assignedRoom: safe.assignedRoom || s.assignedRoom } : s)
+          doctorShifts: state.doctorShifts.map(s => s.name.toLowerCase() === target.name.toLowerCase() ? { ...s, name: safe.name || s.name, specialty: safe.specialty || s.specialty, assignedRoom: safe.assignedRoom || s.assignedRoom, days: safe.days || s.days, hours: safe.hours || s.hours } : s)
         }));
         const final = get().users.find(u => u.id === userId);
         if (final) syncDoc("users", userId, final, OperationType.UPDATE);
@@ -480,7 +482,23 @@ export const useStore = create<ClinicalState>()(
       addClinicalIncomeRecord: (patientId, item) => {
         const remaining = Math.max(0, item.totalCost - item.paidAmount);
         const status: PaymentStatus = remaining <= 0 ? "Fully Paid" : item.paidAmount > 0 ? "Partially Paid" : "Unpaid";
-        const financial: FinancialRecord = { id: `rc-${Date.now()}`, patientId, patientName: get().patients.find(p => p.id === patientId)?.name || "Patient", procedureName: item.procedureName, totalCost: item.totalCost, paidAmount: item.paidAmount, remainingAmount: remaining, paymentStatus: status, date: new Date().toISOString().split("T")[0], paymentMethod: item.paymentMethod, receiptNo: `REC-${Date.now()}`, notes: item.notes, type: "income" };
+        const financial: FinancialRecord = { 
+          id: `rc-${Date.now()}`, 
+          patientId, 
+          patientName: get().patients.find(p => p.id === patientId)?.name || "Patient", 
+          procedureName: item.procedureName, 
+          totalCost: item.totalCost, 
+          paidAmount: item.paidAmount, 
+          remainingAmount: remaining, 
+          paymentStatus: status, 
+          date: new Date().toISOString().split("T")[0], 
+          paymentMethod: item.paymentMethod, 
+          receiptNo: `REC-${Date.now()}`, 
+          notes: item.notes, 
+          type: "income",
+          receiptFileName: item.receiptFileName,
+          receiptFileContent: item.receiptFileContent
+        };
         set(state => ({ financialRecords: [financial, ...state.financialRecords] }));
         syncDoc("financialRecords", financial.id, financial, OperationType.CREATE);
       },
@@ -496,7 +514,7 @@ export const useStore = create<ClinicalState>()(
               const nPaid = pr.paidAmount + amount;
               const nRem = Math.max(0, pr.totalCost - nPaid);
               proc = `${pr.prostheticType} (Tooth ${pr.toothNumber})`; t = pr.totalCost; rem = nRem;
-              return { ...pr, paidAmount: nPaid, remainingAmount: nRem, paymentStatus: nRem <= 0 ? "Fully Paid" : "Partially Paid" };
+              return { ...pr, paidAmount: nPaid, remainingAmount: nRem, paymentStatus: (nRem <= 0 ? "Fully Paid" : "Partially Paid") as PaymentStatus };
             })};
           });
           const receipt: FinancialRecord = { id: `rc-${Date.now()}`, patientId: pId, patientName: pName, procedureName: proc, totalCost: amount, paidAmount: amount, remainingAmount: 0, paymentStatus: "Fully Paid", date: new Date().toISOString().split("T")[0], paymentMethod: method, receiptNo: `REC-${Date.now()}`, notes: `Installment (Total: $${t}, Rem: $${rem})` };

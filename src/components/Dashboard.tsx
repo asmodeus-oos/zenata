@@ -103,11 +103,26 @@ export default function Dashboard({ onSwitchTab, onSelectPatient }: DashboardPro
       totalRevenue += record.paidAmount;
     });
 
-    // Sum from Patients' Prosthetics Remaining Amounts
+    const isProstheticRecord = (name: string) => {
+      const lower = name.toLowerCase();
+      return (
+        lower.includes("zirconia") ||
+        lower.includes("e-max") ||
+        lower.includes("porcelain") ||
+        lower.includes("bridge") ||
+        lower.includes("denture") ||
+        lower.includes("crown") ||
+        lower.includes("prosthetic")
+      );
+    };
+
+    // Sum from Patients' Prosthetics & non-prosthetic Remaining Amounts
     patients.forEach(pat => {
-      pat.prostheticsRecords.forEach(pr => {
-        pendingDues += pr.remainingAmount;
-      });
+      const prostOwed = pat.prostheticsRecords?.reduce((sum, pr) => sum + (pr.remainingAmount || 0), 0) || 0;
+      const nonProstOwed = financialRecords
+        .filter(f => f.patientId === pat.id && f.remainingAmount > 0 && !isProstheticRecord(f.procedureName))
+        .reduce((sum, f) => sum + (f.remainingAmount || 0), 0) || 0;
+      pendingDues += (prostOwed + nonProstOwed);
     });
 
     return { totalRevenue, pendingDues };

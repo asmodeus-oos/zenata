@@ -413,12 +413,24 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
   // Compute outstanding balances per patient
   const patientsWithOutstandingBalances = useMemo(() => {
     return patients.map(p => {
+      const isProstheticRecord = (name: string) => {
+        const lower = name.toLowerCase();
+        return (
+          lower.includes("zirconia") ||
+          lower.includes("e-max") ||
+          lower.includes("porcelain") ||
+          lower.includes("bridge") ||
+          lower.includes("denture") ||
+          lower.includes("crown") ||
+          lower.includes("prosthetic")
+        );
+      };
       const prostOwed = p.prostheticsRecords?.reduce((sum, pr) => sum + (pr.remainingAmount || 0), 0) || 0;
-      const finOwed = financialRecords
-        .filter(f => f.patientId === p.id && f.remainingAmount > 0)
+      const nonProstOwed = financialRecords
+        .filter(f => f.patientId === p.id && f.remainingAmount > 0 && !isProstheticRecord(f.procedureName))
         .reduce((sum, f) => sum + (f.remainingAmount || 0), 0) || 0;
       
-      const totalOwed = Math.max(prostOwed, finOwed);
+      const totalOwed = prostOwed + nonProstOwed;
       
       const patientAppointments = appointments.filter(a => a.patientId === p.id);
       const lastAppt = patientAppointments.length > 0 
@@ -428,7 +440,13 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
       const lastVisitDate = lastAppt ? lastAppt.date : (p.prostheticsRecords?.[0]?.date || p.createdAt.split("T")[0]);
       const lastVisitProc = lastAppt ? lastAppt.procedureType : (p.prostheticsRecords?.[0]?.prostheticType ? `${p.prostheticsRecords[0].prostheticType} Prep` : "Initial Intake");
 
-      const oweDetails = p.prostheticsRecords?.filter(pr => pr.remainingAmount > 0).map(pr => `${pr.prostheticType} (Tooth ${pr.toothNumber})`).join(", ") || "General Treatment Plan";
+      const nonProstDues = financialRecords.filter(f => f.patientId === p.id && f.remainingAmount > 0 && !isProstheticRecord(f.procedureName));
+      const prostDues = p.prostheticsRecords?.filter(pr => pr.remainingAmount > 0) || [];
+      const detailsList = [
+        ...prostDues.map(pr => `${pr.prostheticType} (Tooth ${pr.toothNumber})`),
+        ...nonProstDues.map(f => f.procedureName)
+      ];
+      const oweDetails = detailsList.join(", ") || "General Treatment Plan";
 
       return {
         id: p.id,
@@ -1590,6 +1608,23 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
                     <span>Amount Transacted:</span>
                     <span className="font-mono">{formatCurrency(activeReceipt.type === "expense" ? activeReceipt.totalCost : activeReceipt.paidAmount)}</span>
                   </div>
+                  {activeReceipt.receiptFileName && (
+                    <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-2 text-xs text-slate-700">
+                      <div className="flex items-center gap-2">
+                        <FileText size={14} className="text-blue-500" />
+                        <span className="font-semibold truncate max-w-[180px]">{activeReceipt.receiptFileName}</span>
+                      </div>
+                      {activeReceipt.receiptFileContent && activeReceipt.receiptFileContent.startsWith("data:") && (
+                        <a 
+                          href={activeReceipt.receiptFileContent} 
+                          download={activeReceipt.receiptFileName}
+                          className="text-blue-600 hover:underline font-extrabold text-[10px] cursor-pointer"
+                        >
+                          Download/View File
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

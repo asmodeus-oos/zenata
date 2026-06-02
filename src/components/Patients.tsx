@@ -1198,8 +1198,12 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
             <div className="bg-white border border-slate-200 rounded-[32px] p-6 shadow-sm space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-700 border border-blue-200/50 flex items-center justify-center font-black text-lg shadow-inner">
-                    {activePatient.name.substring(0, 2).toUpperCase()}
+                  <div className="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-700 border border-blue-200/50 flex items-center justify-center font-black text-lg shadow-inner overflow-hidden">
+                    {activePatient.avatarUrl ? (
+                      <img src={activePatient.avatarUrl} alt={activePatient.name} className="w-full h-full object-cover" />
+                    ) : (
+                      activePatient.name.substring(0, 2).toUpperCase()
+                    )}
                   </div>
                   <div>
                     <h2 className="text-xl font-black text-slate-800 tracking-tight leading-none">{activePatient.name}</h2>
@@ -1319,12 +1323,24 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
 
             {/* ALERT: OUTSTANDING PAYMENTS / WHAT THE PATIENT OWES */}
             {(() => {
+              const isProstheticRecord = (name: string) => {
+                const lower = name.toLowerCase();
+                return (
+                  lower.includes("zirconia") ||
+                  lower.includes("e-max") ||
+                  lower.includes("porcelain") ||
+                  lower.includes("bridge") ||
+                  lower.includes("denture") ||
+                  lower.includes("crown") ||
+                  lower.includes("prosthetic")
+                );
+              };
+              const prostOwed = activePatient.prostheticsRecords?.reduce((sum, pr) => sum + (pr.remainingAmount || 0), 0) || 0;
+              const nonProstOwed = financialRecords
+                .filter(f => f.patientId === activePatient.id && f.remainingAmount > 0 && !isProstheticRecord(f.procedureName))
+                .reduce((sum, f) => sum + (f.remainingAmount || 0), 0) || 0;
+              const totalOwed = prostOwed + nonProstOwed;
               const outstandingProsthetics = activePatient.prostheticsRecords?.filter(p => p.remainingAmount > 0) || [];
-              const outstandingFinancials = financialRecords.filter(f => f.patientId === activePatient.id && f.remainingAmount > 0);
-              const totalOwed = Math.max(
-                outstandingProsthetics.reduce((sum, p) => sum + p.remainingAmount, 0),
-                outstandingFinancials.reduce((sum, f) => sum + f.remainingAmount, 0)
-              );
 
               if (totalOwed <= 0) return null;
 
@@ -1337,7 +1353,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                     <div>
                       <h4 className="text-sm font-black text-slate-800 tracking-tight">Active Financial Balance Outstanding</h4>
                       <p className="text-xs text-slate-600 font-medium mt-1">
-                        We flagged an active outstanding balance of <span className="text-orange-600 font-extrabold font-mono">${totalOwed.toLocaleString()}</span> for prosthetic treatments in this patient's digital ledger.
+                        We flagged an active outstanding balance of <span className="text-orange-600 font-extrabold font-mono">${totalOwed.toLocaleString()}</span> for prosthetic and clinical treatments in this patient's digital ledger.
                       </p>
                       {outstandingProsthetics.length > 0 && (
                         <div className="mt-1.5 flex flex-wrap gap-1.5">

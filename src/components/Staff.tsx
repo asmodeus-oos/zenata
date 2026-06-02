@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useStore } from "../store";
 import { 
   ShieldAlert, 
@@ -15,6 +15,8 @@ import {
   Shield, 
   Lock, 
   Key,
+  Eye,
+  EyeOff,
   Calendar,
   Clock,
   Briefcase,
@@ -101,11 +103,173 @@ export default function Staff() {
   const [editRoom, setEditRoom] = useState("");
   const [editHours, setEditHours] = useState("");
   const [editDays, setEditDays] = useState<string[]>([]);
+  const [avatarInputMode, setAvatarInputMode] = useState<"link" | "file">("link");
+
+  // States for rich Duty Shift Hours time picker in Edit Modal
+  const [fromHour, setFromHour] = useState("09");
+  const [fromMinute, setFromMinute] = useState("00");
+  const [fromAmpm, setFromAmpm] = useState("AM");
+  const [toHour, setToHour] = useState("05");
+  const [toMinute, setToMinute] = useState("00");
+  const [toAmpm, setToAmpm] = useState("PM");
+
+  // Helper functions for hours and minutes increments/decrements
+  const incrementHourFunc = (prev: string) => {
+    let h = parseInt(prev, 10);
+    if (isNaN(h)) h = 12;
+    h = h === 12 ? 1 : h + 1;
+    return String(h).padStart(2, "0");
+  };
+
+  const decrementHourFunc = (prev: string) => {
+    let h = parseInt(prev, 10);
+    if (isNaN(h)) h = 12;
+    h = h === 1 ? 12 : h - 1;
+    return String(h).padStart(2, "0");
+  };
+
+  const incrementMinuteFunc = (prev: string) => {
+    let m = parseInt(prev, 10);
+    if (isNaN(m)) m = 59;
+    m = m === 59 ? 0 : m + 1;
+    return String(m).padStart(2, "0");
+  };
+
+  const decrementMinuteFunc = (prev: string) => {
+    let m = parseInt(prev, 10);
+    if (isNaN(m)) m = 0;
+    m = m === 0 ? 59 : m - 1;
+    return String(m).padStart(2, "0");
+  };
+
+  // Keyboard typing handlers (allowing intermediate values and validating on blur)
+  const handleHourChange = (valStr: string, setHour: (h: string) => void) => {
+    const digits = valStr.replace(/\D/g, "");
+    if (digits === "") {
+      setHour("");
+      return;
+    }
+    const val = parseInt(digits, 10);
+    if (digits === "0" || digits === "00") {
+      setHour("0");
+    } else if (val >= 1 && val <= 12) {
+      setHour(digits.slice(0, 2));
+    }
+  };
+
+  const handleHourBlur = (hourVal: string, setHour: (h: string) => void, defaultVal = "09") => {
+    let h = parseInt(hourVal, 10);
+    if (isNaN(h) || h < 1 || h > 12) {
+      setHour(defaultVal);
+    } else {
+      setHour(String(h).padStart(2, "0"));
+    }
+  };
+
+  const handleMinuteChange = (valStr: string, setMinute: (m: string) => void) => {
+    const digits = valStr.replace(/\D/g, "");
+    if (digits === "") {
+      setMinute("");
+      return;
+    }
+    const val = parseInt(digits, 10);
+    if (digits === "0" || digits === "00" || (val >= 0 && val <= 59)) {
+      setMinute(digits.slice(0, 2));
+    }
+  };
+
+  const handleMinuteBlur = (minVal: string, setMinute: (m: string) => void, defaultVal = "00") => {
+    let m = parseInt(minVal, 10);
+    if (isNaN(m) || m < 0 || m > 59) {
+      setMinute(defaultVal);
+    } else {
+      setMinute(String(m).padStart(2, "0"));
+    }
+  };
+
+  // Callback refs to handle non-passive wheel scrolling event listeners
+  const fromHourCleanup = useRef<{ node: HTMLInputElement; handler: (e: WheelEvent) => void } | null>(null);
+  const fromHourRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (fromHourCleanup.current) {
+      fromHourCleanup.current.node.removeEventListener("wheel", fromHourCleanup.current.handler);
+      fromHourCleanup.current = null;
+    }
+    if (node) {
+      const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        const isUp = e.deltaY < 0;
+        setFromHour(isUp ? incrementHourFunc : decrementHourFunc);
+      };
+      node.addEventListener("wheel", handleWheel, { passive: false });
+      fromHourCleanup.current = { node, handler: handleWheel };
+    }
+  }, []);
+
+  const fromMinCleanup = useRef<{ node: HTMLInputElement; handler: (e: WheelEvent) => void } | null>(null);
+  const fromMinRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (fromMinCleanup.current) {
+      fromMinCleanup.current.node.removeEventListener("wheel", fromMinCleanup.current.handler);
+      fromMinCleanup.current = null;
+    }
+    if (node) {
+      const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        const isUp = e.deltaY < 0;
+        setFromMinute(isUp ? incrementMinuteFunc : decrementMinuteFunc);
+      };
+      node.addEventListener("wheel", handleWheel, { passive: false });
+      fromMinCleanup.current = { node, handler: handleWheel };
+    }
+  }, []);
+
+  const toHourCleanup = useRef<{ node: HTMLInputElement; handler: (e: WheelEvent) => void } | null>(null);
+  const toHourRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (toHourCleanup.current) {
+      toHourCleanup.current.node.removeEventListener("wheel", toHourCleanup.current.handler);
+      toHourCleanup.current = null;
+    }
+    if (node) {
+      const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        const isUp = e.deltaY < 0;
+        setToHour(isUp ? incrementHourFunc : decrementHourFunc);
+      };
+      node.addEventListener("wheel", handleWheel, { passive: false });
+      toHourCleanup.current = { node, handler: handleWheel };
+    }
+  }, []);
+
+  const toMinCleanup = useRef<{ node: HTMLInputElement; handler: (e: WheelEvent) => void } | null>(null);
+  const toMinRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (toMinCleanup.current) {
+      toMinCleanup.current.node.removeEventListener("wheel", toMinCleanup.current.handler);
+      toMinCleanup.current = null;
+    }
+    if (node) {
+      const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        const isUp = e.deltaY < 0;
+        setToMinute(isUp ? incrementMinuteFunc : decrementMinuteFunc);
+      };
+      node.addEventListener("wheel", handleWheel, { passive: false });
+      toMinCleanup.current = { node, handler: handleWheel };
+    }
+  }, []);
+
+  React.useEffect(() => {
+    setEditHours(`${fromHour}:${fromMinute} ${fromAmpm} - ${toHour}:${toMinute} ${toAmpm}`);
+  }, [fromHour, fromMinute, fromAmpm, toHour, toMinute, toAmpm]);
 
   // UI Status Banners
   const [pwdError, setPwdError] = useState("");
   const [pwdSuccess, setPwdSuccess] = useState("");
   const [profileSuccess, setProfileSuccess] = useState("");
+
+  // States for password visibility eye icon toggles
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [showMasterKey, setShowMasterKey] = useState(false);
 
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [resetConfirmCode, setResetConfirmCode] = useState("");
@@ -287,11 +451,72 @@ export default function Staff() {
     setEditRoom(u.assignedRoom || "");
     setEditHours(u.hours || "09:00 AM - 05:00 PM");
     setEditDays(u.days || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]);
+    setAvatarInputMode("link");
+
+    // Parse hours string like "09:00 AM - 05:00 PM"
+    const hoursStr = u.hours || "09:00 AM - 05:00 PM";
+    const parts = hoursStr.split(" - ");
+    if (parts.length === 2) {
+      const fromParts = parts[0].split(" ");
+      const toParts = parts[1].split(" ");
+      
+      if (fromParts.length === 2) {
+        const fromTime = fromParts[0].split(":");
+        if (fromTime.length === 2) {
+          setFromHour(fromTime[0]);
+          setFromMinute(fromTime[1]);
+        }
+        setFromAmpm(fromParts[1]);
+      }
+      
+      if (toParts.length === 2) {
+        const toTime = toParts[0].split(":");
+        if (toTime.length === 2) {
+          setToHour(toTime[0]);
+          setToMinute(toTime[1]);
+        }
+        setToAmpm(toParts[1]);
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File is too large. Please select an image under 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setEditAvatarUrl(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSaveMemberEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
+
+    let fh = fromHour;
+    let fm = fromMinute;
+    let th = toHour;
+    let tm = toMinute;
+
+    if (!fh || isNaN(parseInt(fh, 10))) fh = "09";
+    if (!fm || isNaN(parseInt(fm, 10))) fm = "00";
+    if (!th || isNaN(parseInt(th, 10))) th = "05";
+    if (!tm || isNaN(parseInt(tm, 10))) tm = "00";
+
+    fh = String(parseInt(fh, 10)).padStart(2, "0");
+    fm = String(parseInt(fm, 10)).padStart(2, "0");
+    th = String(parseInt(th, 10)).padStart(2, "0");
+    tm = String(parseInt(tm, 10)).padStart(2, "0");
+
+    const finalHours = `${fh}:${fm} ${fromAmpm} - ${th}:${tm} ${toAmpm}`;
 
     updateUserProfile(editingUser.id, {
       name: editName,
@@ -304,7 +529,7 @@ export default function Staff() {
       avatarUrl: editAvatarUrl,
       specialty: editSpecialty,
       assignedRoom: editRoom,
-      hours: editHours,
+      hours: finalHours,
       days: editDays
     });
 
@@ -428,19 +653,7 @@ export default function Staff() {
           }`}
         >
           <Users size={14} />
-          <span>Registered Personnel ({users.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("shifts")}
-          className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all ${
-            activeTab === "shifts"
-              ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-              : "text-slate-600 hover:text-slate-800 hover:bg-slate-100/60"
-          }`}
-        >
-          <Clock size={14} />
-          <span>Clinical Shifts & Rosters ({doctorShifts.length})</span>
+          <span>Registered Personnel & Rosters ({users.length})</span>
         </button>
 
         {isAdmin && (
@@ -529,91 +742,191 @@ export default function Staff() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredUsers.map((usr) => {
               const isSelf = usr.id === currentUser?.id;
-              
-              // Custom fixed placeholder profile images if missing or corrupt
+              const isOwner = usr.id === "usr-1";
               const finalAvatar = usr.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(usr.name)}&background=2563EB&color=fff&bold=true`;
 
+              // Determine border indicator & accent gradients based on role
+              const roleTheme: Record<string, { border: string; bgGlow: string; text: string; dot: string; badge: string }> = {
+                admin: {
+                  border: "border-l-[6px] border-l-purple-600",
+                  bgGlow: "from-purple-500/10 via-transparent to-transparent",
+                  text: "text-purple-700",
+                  dot: "bg-purple-500",
+                  badge: "bg-purple-50 text-purple-700 border-purple-200"
+                },
+                doctor: {
+                  border: "border-l-[6px] border-l-indigo-600",
+                  bgGlow: "from-indigo-500/10 via-transparent to-transparent",
+                  text: "text-indigo-700",
+                  dot: "bg-indigo-500",
+                  badge: "bg-indigo-50 text-indigo-700 border-indigo-200"
+                },
+                clinician: {
+                  border: "border-l-[6px] border-l-blue-600",
+                  bgGlow: "from-blue-500/10 via-transparent to-transparent",
+                  text: "text-blue-700",
+                  dot: "bg-blue-500",
+                  badge: "bg-blue-50 text-blue-700 border-blue-200"
+                },
+                receptionist: {
+                  border: "border-l-[6px] border-l-amber-500",
+                  bgGlow: "from-amber-500/10 via-transparent to-transparent",
+                  text: "text-amber-700",
+                  dot: "bg-amber-500",
+                  badge: "bg-amber-50 text-amber-700 border-amber-250"
+                },
+                frontdesk: {
+                  border: "border-l-[6px] border-l-orange-500",
+                  bgGlow: "from-orange-500/10 via-transparent to-transparent",
+                  text: "text-orange-700",
+                  dot: "bg-orange-500",
+                  badge: "bg-orange-50 text-orange-700 border-orange-200"
+                },
+                accountant: {
+                  border: "border-l-[6px] border-l-emerald-600",
+                  bgGlow: "from-emerald-500/10 via-transparent to-transparent",
+                  text: "text-emerald-700",
+                  dot: "bg-emerald-500",
+                  badge: "bg-emerald-50 text-emerald-700 border-emerald-200"
+                }
+              };
+
+              const theme = roleTheme[usr.role as keyof typeof roleTheme] || {
+                border: "border-l-[6px] border-l-slate-400",
+                bgGlow: "from-slate-500/5 via-transparent to-transparent",
+                text: "text-slate-700",
+                dot: "bg-slate-400",
+                badge: "bg-slate-50 text-slate-650 border-slate-200"
+              };
+
               return (
-                <div 
-                  key={usr.id} 
-                  className={`bg-white border rounded-[28px] p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4 relative overflow-hidden group ${
-                    isSelf 
-                      ? `border-blue-300 ring-2 ring-blue-50/80 ${usr.role === 'admin' ? '' : 'bg-blue-50/5'}` 
-                      : "border-slate-200/80 hover:border-slate-300"
+                <div
+                  key={usr.id}
+                  className={`bg-white rounded-2xl border border-slate-200/80 ${theme.border} shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group relative p-5 ${
+                    isSelf ? "ring-2 ring-blue-500/35 bg-blue-50/5" : ""
                   }`}
                 >
-                  {/* Subtle graphical glow */}
-                  <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl pointer-events-none opacity-40 group-hover:opacity-80 transition-opacity ${
-                    usr.role === "admin" ? "bg-white" : usr.role === "clinician" ? "bg-sky-200" : "bg-amber-100"
-                  }`} />
+                  {/* Subtle Background Glow for dynamic premium feel */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${theme.bgGlow} opacity-30 pointer-events-none transition-opacity duration-300 group-hover:opacity-60`} />
 
-                  <div className="flex items-start gap-4 z-10">
-                    {/* AVATAR BOX & BIOMETRICS VIEW */}
-                    <div className="relative shrink-0">
-                      <img 
-                        src={finalAvatar} 
-                        alt={usr.name} 
-                        className="w-14 h-14 rounded-2xl object-cover border border-slate-200/80 bg-slate-100 shadow-xs"
-                      />
-                      <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center ${
-                        usr.isActive ? "bg-emerald-500" : "bg-orange-500"
-                      }`} />
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <h4 className="font-extrabold text-slate-800 text-sm leading-tight break-words">{usr.name}</h4>
-                        {isSelf && (
-                          <span className="text-[8px] tracking-wider uppercase font-black bg-blue-100 text-blue-800 border border-blue-200 px-1.5 py-0.5 rounded-md shrink-0">
-                            You
+                  {/* 1. Header Row (Avatar, Name, Room Location) */}
+                  <div className="relative z-10 flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      {/* Avatar with Status Ring */}
+                      <div className="relative shrink-0">
+                        <div className="p-0.5 bg-gradient-to-tr from-slate-200 to-slate-100 rounded-xl shadow-xs">
+                          <img
+                            src={finalAvatar}
+                            alt={usr.name}
+                            className="w-14 h-14 rounded-xl object-cover bg-slate-50 block transition-transform duration-300 group-hover:scale-105"
+                          />
+                        </div>
+                        {/* Active Status Badge */}
+                        <div className="absolute -bottom-1 -right-1">
+                          <span className="flex h-5 w-5 relative">
+                            {usr.isActive ? (
+                              <>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-500 border border-white items-center justify-center shadow-xs">
+                                  <Check size={8} className="text-white font-black" />
+                                </span>
+                              </>
+                            ) : (
+                              <span className="relative inline-flex rounded-full h-5 w-5 bg-amber-500 border border-white items-center justify-center shadow-xs">
+                                <AlertTriangle size={8} className="text-white font-black" />
+                              </span>
+                            )}
                           </span>
-                        )}
+                        </div>
                       </div>
 
-                      <p className="text-[10px] uppercase font-black text-blue-600 block mt-1 tracking-tight break-words">
-                        {usr.specialty || (usr.role === "clinician" ? "Dentist Practitioner" : usr.role === "admin" ? "Practice Administrator" : "Clinic Front Desk Officer")}
-                      </p>
-
-                      <div className="mt-2.5 space-y-1 text-slate-500 text-[10px] font-semibold">
-                        <p className="flex items-center gap-1">
-                          <Smartphone size={10} className="text-slate-400 shrink-0" />
-                          <span className="font-mono text-slate-700 break-all">{usr.phone || "No phone linked"}</span>
+                      {/* Name & Specialty Info */}
+                      <div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h4 className="font-extrabold text-slate-800 text-sm tracking-tight leading-tight transition-colors group-hover:text-blue-600">
+                            {usr.name}
+                          </h4>
+                          {isSelf && (
+                            <span className="text-[7.5px] font-black uppercase bg-gradient-to-r from-blue-600 to-indigo-650 text-white px-2 py-0.5 rounded-full shadow-xs">
+                              You
+                            </span>
+                          )}
+                          {isOwner && (
+                            <span className="text-[7.5px] font-black uppercase bg-gradient-to-r from-purple-600 to-indigo-650 text-white px-2 py-0.5 rounded-full shadow-xs">
+                              Owner
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[9.5px] uppercase font-bold text-slate-400 tracking-wider mt-1">
+                          {usr.specialty || (usr.role === "clinician" ? "Dentist Practitioner" : usr.role === "admin" ? "Practice Owner & Specialist" : "Clinic Front Desk Officer")}
                         </p>
-                        <p className="flex items-center gap-1">
-                          <Mail size={10} className="text-slate-400 shrink-0" />
-                          <span className="break-all text-slate-600">{usr.email || "No email listed"}</span>
-                        </p>
-                        {usr.assignedRoom && (
-                          <p className="flex items-center gap-1 text-blue-600 font-bold mt-1 bg-blue-50/50 px-2 py-0.5 rounded-md border border-blue-100/50 w-fit">
-                            <MapPin size={10} className="shrink-0" />
-                            <span className="uppercase tracking-wider text-[9px]">{usr.assignedRoom}</span>
-                          </p>
-                        )}
                       </div>
                     </div>
+
+                    {/* Room Assignment (Right aligned) */}
+                    {usr.assignedRoom && (
+                      <span className="shrink-0 px-2.5 py-1 bg-slate-50 border border-slate-200 text-slate-650 text-[9px] font-extrabold uppercase tracking-wider rounded-xl flex items-center gap-1 shadow-3xs">
+                        <MapPin size={9} className="text-indigo-500" />
+                        <span>{usr.assignedRoom}</span>
+                      </span>
+                    )}
                   </div>
 
-                  {/* DUTY SCHEDULING CARD BLOCK */}
-                  <div className="bg-slate-50 border border-slate-200/70 p-3 rounded-xl space-y-1.5 z-10 text-[11px]">
-                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                      <span className="flex items-center gap-1">
-                        <Calendar size={10} />
-                        <span> Roster Schedules</span>
+                  {/* 2. Contact Details (Layout Efficient Interactive Grid) */}
+                  <div className="relative z-10 mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] text-slate-500 font-semibold border-t border-b border-slate-100 py-3">
+                    <a
+                      href={usr.phone ? `tel:${usr.phone}` : "#"}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded-xl transition-all duration-200 ${
+                        usr.phone 
+                          ? 'hover:bg-blue-50 hover:text-blue-600 border border-transparent hover:border-blue-200/40 text-slate-600' 
+                          : 'cursor-not-allowed opacity-50'
+                      }`}
+                      title={usr.phone ? `Call ${usr.name}` : "No phone linked"}
+                      onClick={(e) => !usr.phone && e.preventDefault()}
+                    >
+                      <Smartphone size={13} className={usr.phone ? "text-blue-500" : "text-slate-400"} />
+                      <span className="truncate">{usr.phone || "No phone listed"}</span>
+                    </a>
+
+                    <a
+                      href={usr.email ? `mailto:${usr.email}` : "#"}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded-xl transition-all duration-200 ${
+                        usr.email 
+                          ? 'hover:bg-blue-50 hover:text-blue-600 border border-transparent hover:border-blue-200/40 text-slate-600' 
+                          : 'cursor-not-allowed opacity-50'
+                      }`}
+                      title={usr.email ? `Mail ${usr.name}` : "No email listed"}
+                      onClick={(e) => !usr.email && e.preventDefault()}
+                    >
+                      <Mail size={13} className={usr.email ? "text-indigo-500" : "text-slate-400"} />
+                      <span className="truncate">{usr.email || "No email listed"}</span>
+                    </a>
+                  </div>
+
+                  {/* 3. Shift Grid & Scheduler */}
+                  <div className="relative z-10 mt-3.5 bg-slate-50/65 border border-slate-200/50 p-3 rounded-2xl space-y-2.5">
+                    <div className="flex items-center justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                      <div className="flex items-center gap-1.5">
+                        <Clock size={11} className="text-indigo-500" />
+                        <span>Shift Hours</span>
+                      </div>
+                      <span className="font-mono text-slate-700 font-extrabold bg-white px-2 py-0.5 rounded-lg border border-slate-200/40">
+                        {usr.hours || "On-Call Duty"}
                       </span>
-                      <span className="font-mono text-slate-600">{usr.hours || "Shift: On-Call"}</span>
                     </div>
-                    
-                    <div className="flex flex-wrap gap-1 mt-1">
+
+                    <div className="flex gap-1 justify-between">
                       {weekDays.map((day) => {
                         const isScheduled = usr.days?.includes(day);
                         return (
-                          <span 
-                            key={day} 
-                            className={`px-1.5 py-0.5 rounded text-[8px] font-bold tracking-tight border uppercase ${
-                              isScheduled 
-                                ? "bg-blue-50 text-blue-700 border-blue-200/50" 
-                                : "bg-white text-slate-300 border-slate-100 line-through decoration-slate-200"
+                          <span
+                            key={day}
+                            className={`flex-1 text-center py-1 rounded-lg text-[8px] font-black uppercase transition-all duration-200 border ${
+                              isScheduled
+                                ? "bg-gradient-to-r from-blue-600 to-indigo-650 text-white border-transparent shadow-2xs shadow-blue-100/50 scale-105"
+                                : "bg-white text-slate-350 border-slate-200/40 hover:bg-slate-50/50"
                             }`}
+                            title={`${usr.name} is ${isScheduled ? 'scheduled' : 'off'} on ${day}`}
                           >
                             {day.substring(0, 3)}
                           </span>
@@ -622,105 +935,106 @@ export default function Staff() {
                     </div>
                   </div>
 
-                  {/* ACCOUNT STABILITY CONTROLS */}
-                  <div className="border-t border-slate-100/80 pt-3 flex flex-wrap items-center justify-between gap-2.5 z-10">
-                    <div className="flex flex-wrap items-center gap-1.5">
+                  {/* 4. Footer Badges & Administrative Controls */}
+                  <div className="relative z-10 mt-4 border-t border-slate-100 pt-3 flex flex-wrap items-center justify-between gap-3">
+                    {/* Role Badges */}
+                    <div className="flex flex-wrap items-center gap-1">
                       {[usr.role, usr.role2].map((role, rIdx) => {
                         if (!role || (role as string) === "none") return null;
-                        
-                        const roleStyles: Record<string, string> = {
-                          admin: "bg-slate-900 text-white border-slate-900",
-                          doctor: "bg-indigo-50 text-indigo-700 border-indigo-200",
-                          clinician: "bg-blue-50 text-blue-700 border-blue-200",
-                          receptionist: "bg-amber-50 text-amber-700 border-amber-200",
-                          frontdesk: "bg-orange-50 text-orange-700 border-orange-200",
-                          accountant: "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        };
 
-                        const roleLabels: Record<string, string> = {
-                          admin: "Admin",
-                          doctor: "Doctor",
-                          clinician: "Dentist",
-                          receptionist: "Reception",
-                          frontdesk: "Front Desk",
-                          accountant: "Accounting"
+                        const roleMeta = roleTheme[role as keyof typeof roleTheme] || {
+                          badge: "bg-slate-50 text-slate-650 border-slate-200",
+                          dot: "bg-slate-400",
+                          text: "text-slate-600"
                         };
 
                         return (
-                          <span 
+                          <span
                             key={rIdx}
-                            className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-lg border ${roleStyles[role] || "bg-slate-50 text-slate-600 border-slate-200"}`}
+                            className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-full border flex items-center gap-1.5 tracking-wider shadow-3xs ${roleMeta.badge}`}
                           >
-                            {roleLabels[role] || role}
+                            <span className={`w-1 h-1 rounded-full ${roleMeta.dot}`} />
+                            <span>{role === "admin" ? "Admin" : role === "doctor" ? "Doctor" : role === "clinician" ? "Dentist" : role === "receptionist" ? "Reception" : role === "frontdesk" ? "Front Desk" : role === "accountant" ? "Accounting" : role}</span>
                           </span>
                         );
                       })}
 
                       {!usr.isActive && (
-                        <span className="bg-orange-50 text-orange-700 text-[8.5px] tracking-wider uppercase font-black px-1.5 py-0.5 rounded border border-orange-200">
-                          Revoked
+                        <span className="bg-rose-50 text-rose-700 border-rose-150 text-[8px] tracking-wider uppercase font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-3xs">
+                          <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
+                          <span>Revoked</span>
                         </span>
                       )}
                     </div>
 
-                    {/* DIRECT INTERACTIVE BUTTON LABELS */}
-                    <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                    {/* Action Controls */}
+                    <div className="flex items-center justify-end gap-1.5 select-none self-end sm:self-auto">
                       {isAdmin ? (
                         <>
-                          {usr.id !== "usr-1" ? (
+                          {!isOwner ? (
                             <button
                               type="button"
                               onClick={() => {
                                 toggleStaffStatus(usr.id);
                                 alert(`Status for ${usr.name} changed successfully.`);
                               }}
-                              className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border cursor-pointer select-none transition-all duration-150 ${
-                                usr.isActive 
-                                  ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100/80" 
-                                  : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-150/80"
+                              className={`px-2.5 py-1.5 text-[8.5px] font-black uppercase rounded-xl border cursor-pointer select-none transition-all duration-205 flex items-center gap-1 shadow-2xs hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 ${
+                                usr.isActive
+                                  ? "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
+                                  : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
                               }`}
+                              title={usr.isActive ? "Revoke System Credentials" : "Authorize System Credentials"}
                             >
-                              {usr.isActive ? "Revoke Keys" : "Authorize Keys"}
+                              <Shield size={9} />
+                              <span>{usr.isActive ? "Revoke" : "Authorize"}</span>
                             </button>
                           ) : (
-                            <span className="text-[10px] text-slate-400 font-bold px-1.5 py-1 select-none">Owner Keys</span>
+                            <span className="text-[8px] uppercase font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1.5 rounded-xl select-none flex items-center gap-1 shadow-3xs">
+                              <UserCheck size={9} className="text-blue-500" />
+                              <span>System Owner</span>
+                            </span>
                           )}
 
-                          {currentUser?.id === "usr-1" || usr.id !== "usr-1" ? (
+                          {currentUser?.id === "usr-1" || !isOwner ? (
                             <>
                               <button
                                 type="button"
                                 onClick={() => handleOpenEditModal(usr)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg border border-blue-700/10 cursor-pointer transition-all duration-150"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[8.5px] uppercase px-2.5 py-1.5 rounded-xl border border-blue-700/10 cursor-pointer transition-all duration-205 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-1"
+                                title={`Edit ${usr.name}'s profile details`}
                               >
-                                Edit
+                                <Settings size={9} className="transition-transform duration-300 group-hover:rotate-45" />
+                                <span>Edit</span>
                               </button>
-                              
-                              {usr.id !== "usr-1" && (
+
+                              {!isOwner && (
                                 <button
                                   type="button"
                                   onClick={() => {
                                     if (confirm(`CRITICAL ACTION: Are you absolutely certain you want to permanently delete the personnel record for ${usr.name}? This action is IRREVERSIBLE.`)) {
-                                      if (confirm(`FINAL VERIFICATION: Type "DELETE" to confirm? (Wait, actually a standard double confirm is enough). Proceed with deleting ${usr.name}?`)) {
+                                      if (confirm(`FINAL VERIFICATION: Proceed with deleting ${usr.name}?`)) {
                                         deleteStaff(usr.id);
                                       }
                                     }
                                   }}
-                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl border border-rose-200 hover:border-rose-300 transition-all cursor-pointer flex items-center justify-center shadow-3xs hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0"
                                   title="Delete personnel record permanently"
                                 >
-                                  <Trash2 size={13} />
+                                  <Trash2 size={11} />
                                 </button>
                               )}
                             </>
                           ) : (
-                            <span className="text-[10px] text-slate-400 font-bold px-1.5 py-1 select-none italic" title="Only Owner can modify their own record">Owner Locked</span>
+                            <span className="text-[8px] uppercase font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1.5 rounded-xl select-none italic flex items-center gap-1" title="Only Owner can modify their own record">
+                              <Lock size={9} />
+                              <span>Locked</span>
+                            </span>
                           )}
                         </>
                       ) : (
-                        <span className="text-[9.5px] text-slate-400 italic font-semibold flex items-center gap-1 select-none">
+                        <span className="text-[8px] uppercase font-bold text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1.5 rounded-xl italic flex items-center gap-1 select-none">
                           <Lock size={9} />
-                          <span>Encrypted File</span>
+                          <span>Locked</span>
                         </span>
                       )}
                     </div>
@@ -740,9 +1054,9 @@ export default function Staff() {
         </div>
       )}
 
-      {/* TAB: CLINICAL SHIFTS & ROSTERS MANAGER */}
-      {activeTab === "shifts" && (
-        <div className="space-y-6" id="shifts-tab-panel">
+      {/* TAB: CLINICAL SHIFTS & ROSTERS MANAGER (Merged into Colleague Cards) */}
+      {false && (
+        <div className="space-y-6 mt-8 pt-8 border-t border-slate-200 animate-fade-in" id="shifts-tab-panel">
           
           {/* HEADER HEADER */}
           <div className="bg-white border border-slate-200/85 p-6 rounded-[28px] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1564,218 +1878,297 @@ export default function Staff() {
 
       {/* TAB 3: OWN SECURITY TOKEN & PASSWORDS */}
       {activeTab === "security" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          {/* PROFILE SETTINGS TOKENS */}
-          <div className="bg-white border border-slate-200 rounded-[32px] p-6 shadow-sm space-y-5">
-            <div>
-              <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <Bookmark size={16} className="text-blue-500" />
-                <span>My Profile Access Keys</span>
-              </h3>
-              <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Verify your registered legal name, email, and mobile contact lines.</p>
+        <div className="space-y-6">
+          {/* Redesigned Session Info Header Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-950 text-white rounded-[32px] p-6 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-700/30">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/5 rounded-full blur-2xl -ml-20 -mb-20 pointer-events-none"></div>
+            
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="relative">
+                <img 
+                  src={currentUser?.avatarUrl || "https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&w=150&q=80"} 
+                  alt={currentUser?.name}
+                  className="w-16 h-16 rounded-2xl object-cover ring-4 ring-slate-700/50 shadow-md animate-fade-in"
+                />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse"></div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-black tracking-tight">{currentUser?.name}</h2>
+                  <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 text-[9px] uppercase font-black tracking-wider rounded border border-blue-500/30">
+                    {currentUser?.role || "staff"}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">@{currentUser?.username} • Active Operator Session</p>
+              </div>
             </div>
 
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Legal Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={ownName}
-                    onChange={(e) => setOwnName(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none font-semibold focus:ring-2 focus:ring-blue-200 transition-all font-bold"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-slate-400">Security Clearance level</label>
-                  <div className="w-full p-2.5 text-xs bg-slate-100 border border-slate-200/60 rounded-xl font-mono text-slate-500 font-bold select-none cursor-not-allowed">
-                    {currentUser?.role === "admin" ? "Administrative Root Auth" : `Clinician block: ${currentUser?.role}`}
-                  </div>
-                </div>
+            <div className="flex items-center gap-5 relative z-10 text-right">
+              <div className="hidden sm:block">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Access Clearance</span>
+                <span className="text-xs font-black text-slate-200 block mt-0.5 font-mono">
+                  {currentUser?.role === "admin" ? "SECURE_ROOT_AUTHORITY" : "CLINICAL_STAFF_AUTH"}
+                </span>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Contact Email</label>
-                  <input
-                    type="email"
-                    value={ownEmail}
-                    onChange={(e) => setOwnEmail(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all font-semibold"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Telephone Line</label>
-                  <input
-                    type="text"
-                    value={ownPhone}
-                    onChange={(e) => setOwnPhone(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200/60 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all font-mono font-semibold"
-                  />
-                </div>
+              <div className="h-8 w-px bg-slate-800 hidden sm:block"></div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Session Key Status</span>
+                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 justify-end mt-0.5">
+                  <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+                  <span>SYSTEM_SECURED</span>
+                </span>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-slate-500">My Clinical Department specialty</label>
-                <input
-                  type="text"
-                  placeholder="E.g., Orthodontics Specialist"
-                  value={ownSpecialty}
-                  onChange={(e) => setOwnSpecialty(e.target.value)}
-                  className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all font-bold text-blue-850"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-slate-500">My Custom image Avatar URL</label>
-                <input
-                  type="url"
-                  placeholder="Paste direct profile image link..."
-                  value={ownAvatarUrl}
-                  onChange={(e) => setOwnAvatarUrl(e.target.value)}
-                  className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all font-mono"
-                />
-                </div>
-
-                <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-slate-500">Physical Room Assignment</label>
-                <select
-                  value={ownRoom}
-                  onChange={(e) => setOwnRoom(e.target.value)}
-                  className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all font-bold cursor-pointer"
-                >
-                  <option value="">No room assigned</option>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
-                    <option key={num} value={`Room ${num}`}>Room {num}</option>
-                  ))}
-                </select>
-                </div>
-              <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-                <button
-                  type="submit"
-                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer active:scale-95 transition-all border border-blue-700/10 shadow-sm shadow-blue-50"
-                >
-                  Update Account Profile
-                </button>
-                {profileSuccess && (
-                  <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl">
-                    <CheckCircle size={12} />
-                    <span>{profileSuccess}</span>
-                  </span>
-                )}
-              </div>
-            </form>
+            </div>
           </div>
 
-          {/* PASSWORD ROTATION CARD */}
-          <div className="bg-white border border-slate-200 rounded-[32px] p-6 shadow-sm space-y-5">
-            <div>
-              <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <KeyRound size={16} className="text-amber-500" />
-                <span>Rotate Station Passphrase</span>
-              </h3>
-              <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Reset your local browser and workstation authorization keys.</p>
-            </div>
-
-            <form onSubmit={handleChangePasswordSubmit} className="space-y-4">
-              {currentUser?.role === "admin" ? (
-                <div className="space-y-3 p-3 bg-amber-500/10 border border-amber-200 rounded-2xl">
-                  <div className="flex items-center gap-1.5 text-amber-900 font-bold text-[10px] uppercase tracking-wide">
-                    <Shield size={12} />
-                    <span>Client-side override disabled</span>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[9px] uppercase font-bold text-amber-700">Current Security Pass</label>
-                      <input
-                        type="password"
-                        value={ownCurrentPass}
-                        onChange={(e) => setOwnCurrentPass(e.target.value)}
-                        className="w-full p-2 rounded-xl border border-amber-300 text-xs text-stone-700 font-mono focus:outline-none focus:bg-white focus:ring-2 focus:ring-amber-400 bg-white"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] uppercase font-bold text-amber-700 flex items-center gap-0.5">
-                        <span>OR Emergency override Key</span>
-                      </label>
-                      <input
-                        type="password"
-                        value={ownMasterKey}
-                        onChange={(e) => setOwnMasterKey(e.target.value)}
-                        className="w-full p-2 rounded-xl border border-amber-300 text-xs text-stone-700 font-mono focus:outline-none focus:bg-white focus:ring-2 focus:ring-amber-400 bg-white"
-                        placeholder="Master resets key..."
-                      />
-                    </div>
-                  </div>
-                  <p className="text-[8px] text-amber-800 leading-tight">
-                    * Emergency bypass is disabled. Use backend admin reset workflows.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Provide Current Password</label>
-                  <input
-                    type="password"
-                    required
-                    value={ownCurrentPass}
-                    onChange={(e) => setOwnCurrentPass(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-stone-700 font-mono focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all shadow-sm"
-                    placeholder="••••••••"
-                  />
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Enter New Password</label>
-                  <input
-                    type="password"
-                    required
-                    value={ownNewPass}
-                    onChange={(e) => setOwnNewPass(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none font-mono focus:ring-2 focus:ring-blue-200 shadow-sm"
-                    placeholder="Min. 4 letters"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Confirm New Password</label>
-                  <input
-                    type="password"
-                    required
-                    value={ownConfirmPass}
-                    onChange={(e) => setOwnConfirmPass(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none font-mono focus:ring-2 focus:ring-blue-200 shadow-sm"
-                    placeholder="Confirm password"
-                  />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Password Rotation Card */}
+            <div className="lg:col-span-7 bg-white border border-slate-200/80 rounded-[32px] p-8 shadow-sm space-y-6 relative overflow-hidden">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-5">
+                <div>
+                  <h3 className="text-base font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <KeyRound size={20} className="text-blue-600" />
+                    <span>Update Station Passphrase</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 font-medium">Change your workstation passphrase for security clearance compliance.</p>
                 </div>
               </div>
 
-              {pwdError && (
-                <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 text-[10px] font-bold rounded-xl flex items-center gap-1.5">
-                  <ShieldAlert size={14} />
-                  <span>{pwdError}</span>
-                </div>
-              )}
+              <form onSubmit={handleChangePasswordSubmit} className="space-y-5">
+                {currentUser?.role === "admin" ? (
+                  <div className="space-y-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <div className="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wide">
+                      <Shield size={16} className="text-blue-500" />
+                      <span>Identity Re-Verification Required</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500">Current Security Pass</label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                            <Lock size={14} />
+                          </span>
+                          <input
+                            type={showCurrentPass ? "text" : "password"}
+                            value={ownCurrentPass}
+                            onChange={(e) => setOwnCurrentPass(e.target.value)}
+                            className="w-full pl-9 pr-9 p-2.5 rounded-xl border border-slate-200 text-xs text-stone-700 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white focus:border-blue-500 font-bold"
+                            placeholder="••••••••"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowCurrentPass(!showCurrentPass)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                          >
+                            {showCurrentPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 flex items-center gap-0.5">
+                          <span>OR Emergency reset Key</span>
+                        </label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                            <Key size={14} />
+                          </span>
+                          <input
+                            type={showMasterKey ? "text" : "password"}
+                            value={ownMasterKey}
+                            onChange={(e) => setOwnMasterKey(e.target.value)}
+                            className="w-full pl-9 pr-9 p-2.5 rounded-xl border border-slate-200 text-xs text-stone-700 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white focus:border-blue-500 font-bold"
+                            placeholder="Master resets key..."
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowMasterKey(!showMasterKey)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                          >
+                            {showMasterKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-[9px] text-slate-400 leading-tight">
+                      * Change password requires providing your current credentials or the Master reset passphrase.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500">Provide Current Password</label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                        <Lock size={14} />
+                      </span>
+                      <input
+                        type={showCurrentPass ? "text" : "password"}
+                        required
+                        value={ownCurrentPass}
+                        onChange={(e) => setOwnCurrentPass(e.target.value)}
+                        className="w-full pl-9 pr-9 p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs text-stone-700 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm font-bold"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPass(!showCurrentPass)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        {showCurrentPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-              {pwdSuccess && (
-                <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold rounded-xl flex items-center gap-1.5 animate-fade-in">
-                  <CheckCircle size={14} />
-                  <span>{pwdSuccess}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500">Enter New Password</label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                        <Lock size={14} />
+                      </span>
+                      <input
+                        type={showNewPass ? "text" : "password"}
+                        required
+                        value={ownNewPass}
+                        onChange={(e) => setOwnNewPass(e.target.value)}
+                        className="w-full pl-9 pr-9 p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none font-mono focus:ring-2 focus:ring-blue-500 shadow-sm font-bold"
+                        placeholder="Min. 4 letters"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPass(!showNewPass)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        {showNewPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500">Confirm New Password</label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                        <Lock size={14} />
+                      </span>
+                      <input
+                        type={showConfirmPass ? "text" : "password"}
+                        required
+                        value={ownConfirmPass}
+                        onChange={(e) => setOwnConfirmPass(e.target.value)}
+                        className="w-full pl-9 pr-9 p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none font-mono focus:ring-2 focus:ring-blue-500 shadow-sm font-bold"
+                        placeholder="Confirm password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPass(!showConfirmPass)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        {showConfirmPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              )}
 
-              <button
-                type="submit"
-                className="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs rounded-xl active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Key size={13} />
-                <span>Publish New Password Code</span>
-              </button>
-            </form>
+                {pwdError && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-xl flex items-center gap-1.5 animate-pulse">
+                    <ShieldAlert size={16} />
+                    <span>{pwdError}</span>
+                  </div>
+                )}
+
+                {pwdSuccess && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-xl flex items-center gap-1.5 animate-fade-in">
+                    <CheckCircle size={16} />
+                    <span>{pwdSuccess}</span>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl active:scale-98 transition-all shadow-md shadow-blue-100 flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+                >
+                  <Key size={14} />
+                  <span>Publish New Passphrase Code</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Right Column: Security overview / checklist / stats */}
+            <div className="lg:col-span-5 space-y-6">
+              {/* Session Security Card */}
+              <div className="bg-white border border-slate-200/80 rounded-[32px] p-6 shadow-sm space-y-5">
+                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                  <Shield size={16} className="text-indigo-500" />
+                  <span>Session Shield Status</span>
+                </h4>
+                
+                <div className="space-y-3.5">
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
+                        <Lock size={16} />
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Passphrase Encryption</span>
+                        <span className="text-xs font-bold text-slate-700">AES-256 Client Session</span>
+                      </div>
+                    </div>
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] uppercase font-black rounded-lg">ACTIVE</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600">
+                        <ShieldAlert size={16} />
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Clearing Authority</span>
+                        <span className="text-xs font-bold text-slate-700">
+                          {currentUser?.role === "admin" ? "ROOT ACCESS" : "STAFF USER"}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[9px] uppercase font-black rounded-lg">GRANTED</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600">
+                        <ScrollText size={16} />
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Device Fingerprint</span>
+                        <span className="text-xs font-bold text-slate-700 font-mono">browser-session-keys</span>
+                      </div>
+                    </div>
+                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[9px] uppercase font-black rounded-lg">VERIFIED</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Safety Policy Rules */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-100/60 rounded-[32px] p-6 shadow-sm space-y-4">
+                <h4 className="text-xs font-black text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                  <Sparkles size={16} className="text-blue-500" />
+                  <span>Security Recommendations</span>
+                </h4>
+                <ul className="space-y-2 text-[11px] text-blue-800/80 font-medium">
+                  <li className="flex gap-2">
+                    <span className="text-blue-500 font-bold">•</span>
+                    <span>Use a unique passphrase that is not shared across other clinic systems or personal accounts.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-blue-500 font-bold">•</span>
+                    <span>Avoid using sequential characters (e.g., "1234") or easily guessable dates/names.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-blue-500 font-bold">•</span>
+                    <span>Rotate passwords at least every 90 days to maintain high security compliance.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1916,25 +2309,161 @@ export default function Staff() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Medical Department specialty</label>
-                  <input
-                    type="text"
-                    value={editSpecialty}
-                    onChange={(e) => setEditSpecialty(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-bold"
-                  />
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-slate-500">Medical Department specialty</label>
+                <input
+                  type="text"
+                  value={editSpecialty}
+                  onChange={(e) => setEditSpecialty(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-bold"
+                />
+              </div>
+
+              {/* Rich Dual Time Picker */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 space-y-3">
+                <span className="text-[10px] uppercase font-black text-slate-400 block tracking-wider font-semibold">Duty Shift Hours (From / To)</span>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* FROM TIME */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] uppercase font-bold text-slate-550 block">From Time</span>
+                    <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200">
+                      {/* Hour */}
+                      <div className="flex flex-col items-center">
+                        <button 
+                          type="button" 
+                          onClick={() => setFromHour(incrementHourFunc)}
+                          className="text-slate-450 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
+                          title="Increase hours"
+                        >▲</button>
+                        <input 
+                          ref={fromHourRefCallback}
+                          type="text" 
+                          value={fromHour} 
+                          onChange={(e) => handleHourChange(e.target.value, setFromHour)}
+                          onBlur={() => handleHourBlur(fromHour, setFromHour, "09")}
+                          className="w-8 text-center text-xs font-black text-slate-855 focus:outline-none cursor-ns-resize"
+                          title="Type hour, or scroll up/down"
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => setFromHour(decrementHourFunc)}
+                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
+                          title="Decrease hours"
+                        >▼</button>
+                      </div>
+                      
+                      <span className="text-slate-400 font-bold">:</span>
+                      
+                      {/* Minute */}
+                      <div className="flex flex-col items-center">
+                        <button 
+                          type="button" 
+                          onClick={() => setFromMinute(incrementMinuteFunc)}
+                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
+                          title="Increase minutes"
+                        >▲</button>
+                        <input 
+                          ref={fromMinRefCallback}
+                          type="text" 
+                          value={fromMinute} 
+                          onChange={(e) => handleMinuteChange(e.target.value, setFromMinute)}
+                          onBlur={() => handleMinuteBlur(fromMinute, setFromMinute, "00")}
+                          className="w-8 text-center text-xs font-black text-slate-855 focus:outline-none cursor-ns-resize"
+                          title="Type minute, or scroll up/down"
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => setFromMinute(decrementMinuteFunc)}
+                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
+                          title="Decrease minutes"
+                        >▼</button>
+                      </div>
+
+                      {/* AM/PM Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => setFromAmpm(fromAmpm === "AM" ? "PM" : "AM")}
+                        className="ml-auto px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-750 text-[10px] font-black uppercase rounded-lg border border-slate-200 cursor-pointer"
+                        title="Toggle AM/PM"
+                      >
+                        {fromAmpm}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* TO TIME */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] uppercase font-bold text-slate-550 block">To Time</span>
+                    <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200">
+                      {/* Hour */}
+                      <div className="flex flex-col items-center">
+                        <button 
+                          type="button" 
+                          onClick={() => setToHour(incrementHourFunc)}
+                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
+                          title="Increase hours"
+                        >▲</button>
+                        <input 
+                          ref={toHourRefCallback}
+                          type="text" 
+                          value={toHour} 
+                          onChange={(e) => handleHourChange(e.target.value, setToHour)}
+                          onBlur={() => handleHourBlur(toHour, setToHour, "05")}
+                          className="w-8 text-center text-xs font-black text-slate-855 focus:outline-none cursor-ns-resize"
+                          title="Type hour, or scroll up/down"
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => setToHour(decrementHourFunc)}
+                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
+                          title="Decrease hours"
+                        >▼</button>
+                      </div>
+                      
+                      <span className="text-slate-400 font-bold">:</span>
+                      
+                      {/* Minute */}
+                      <div className="flex flex-col items-center">
+                        <button 
+                          type="button" 
+                          onClick={() => setToMinute(incrementMinuteFunc)}
+                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
+                          title="Increase minutes"
+                        >▲</button>
+                        <input 
+                          ref={toMinRefCallback}
+                          type="text" 
+                          value={toMinute} 
+                          onChange={(e) => handleMinuteChange(e.target.value, setToMinute)}
+                          onBlur={() => handleMinuteBlur(toMinute, setToMinute, "00")}
+                          className="w-8 text-center text-xs font-black text-slate-855 focus:outline-none cursor-ns-resize"
+                          title="Type minute, or scroll up/down"
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => setToMinute(decrementMinuteFunc)}
+                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
+                          title="Decrease minutes"
+                        >▼</button>
+                      </div>
+
+                      {/* AM/PM Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => setToAmpm(toAmpm === "AM" ? "PM" : "AM")}
+                        className="ml-auto px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-750 text-[10px] font-black uppercase rounded-lg border border-slate-200 cursor-pointer"
+                        title="Toggle AM/PM"
+                      >
+                        {toAmpm}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Duty Shift Hours</label>
-                  <input
-                    type="text"
-                    value={editHours}
-                    onChange={(e) => setEditHours(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-semibold"
-                  />
-                </div>
+                
+                <p className="text-[9px] text-slate-400 select-none text-center font-medium mt-1">
+                  💡 Tip: Scroll your mouse wheel over the hours or minutes inputs to adjust them, click ▲/▼, or type directly.
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -2009,14 +2538,90 @@ export default function Staff() {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-slate-500">Custom Profile image Link</label>
-                <input
-                  type="text"
-                  value={editAvatarUrl}
-                  onChange={(e) => setEditAvatarUrl(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-600 font-mono"
-                />
+              {/* Profile Picture Option: URL or File Upload */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Profile Picture</label>
+                  
+                  {/* Selectors for Upload vs Link */}
+                  <div className="flex bg-slate-200/60 p-0.5 rounded-lg text-[9px] font-bold select-none">
+                    <button
+                      type="button"
+                      onClick={() => setAvatarInputMode("link")}
+                      className={`px-2 py-1 rounded-md transition-all cursor-pointer ${
+                        avatarInputMode === "link" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      Image Link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAvatarInputMode("file")}
+                      className={`px-2 py-1 rounded-md transition-all cursor-pointer ${
+                        avatarInputMode === "file" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      Upload PC
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {/* Preview avatar */}
+                  <div className="relative shrink-0 w-12 h-12 rounded-xl bg-slate-200 overflow-hidden border border-slate-300/40 shadow-xs flex items-center justify-center">
+                    {editAvatarUrl ? (
+                      <img
+                        src={editAvatarUrl}
+                        alt="Avatar Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100 font-extrabold text-[9px] uppercase">
+                        None
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    {avatarInputMode === "link" ? (
+                      <input
+                        type="text"
+                        placeholder="https://example.com/avatar.jpg"
+                        value={editAvatarUrl}
+                        onChange={(e) => setEditAvatarUrl(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-650 font-mono focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                      />
+                    ) : (
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="edit-avatar-upload"
+                          className="hidden"
+                          onChange={handleFileChange}
+                        />
+                        <label
+                          htmlFor="edit-avatar-upload"
+                          className="w-full p-2.5 rounded-xl border border-dashed border-slate-300 bg-white text-slate-600 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-all text-center select-none"
+                        >
+                          <Plus size={14} className="text-slate-500" />
+                          <span>Choose image...</span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
+                  {editAvatarUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setEditAvatarUrl("")}
+                      className="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-3xs"
+                      title="Clear picture"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1.5">

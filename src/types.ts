@@ -172,6 +172,7 @@ export interface Patient {
   occupation?: string;
   specialtyRecords?: SpecialtyRecords;
   sessions?: PatientSession[];
+  avatarUrl?: string;
 }
 
 export interface Appointment {
@@ -206,6 +207,8 @@ export interface FinancialRecord {
   expenseType?: "payroll" | "utility" | "extra";
   periodType?: "Monthly" | "Daily" | "Specific Day";
   doctorId?: string;
+  receiptFileName?: string;
+  receiptFileContent?: string;
 }
 
 export type LedgerEntryType = "payment" | "refund" | "charge" | "adjustment";
