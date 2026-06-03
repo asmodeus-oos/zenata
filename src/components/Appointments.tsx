@@ -44,7 +44,8 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
     updateAppointment, 
     deleteAppointment,
     addPatient,
-    addClinicalIncomeRecord
+    addClinicalIncomeRecord,
+    currentUser
   } = useStore();
 
   // Booking Wizard states

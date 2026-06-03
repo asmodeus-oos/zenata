@@ -187,6 +187,7 @@ export interface Appointment {
   status: AppointmentStatus;
   notes: string;
   quickNotes?: string;
+  attendingClinicalOperator?: string;
 }
 
 export interface FinancialRecord {

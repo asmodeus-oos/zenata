@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useStore } from "../store";
 import { 
   ShieldAlert, 
@@ -36,7 +37,7 @@ import {
   Phone,
   Stethoscope,
   Calculator,
-  User,
+  User as UserIcon,
   ChevronDown,
   ExternalLink
 } from "lucide-react";
@@ -745,307 +746,221 @@ export default function Staff() {
           </div>
 
           {/* ACTIVE ROSTERS GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {filteredUsers.map((usr) => {
-              const isSelf = usr.id === currentUser?.id;
               const isOwner = usr.id === "usr-1";
-              const finalAvatar = usr.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(usr.name)}&background=2563EB&color=fff&bold=true`;
+              const isSelf = currentUser?.id === usr.id;
+              
+              // Handle default avatars and color generation
+              const avatarBg = "2563EB";
+              const finalAvatar = usr.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(usr.name)}&background=${avatarBg}&color=fff&bold=true`;
 
-              // Determine border indicator & accent gradients based on role
-              const roleTheme: Record<string, { border: string; bgGlow: string; text: string; dot: string; badge: string }> = {
-                admin: {
-                  border: "border-l-[6px] border-l-purple-600",
-                  bgGlow: "from-purple-500/10 via-transparent to-transparent",
-                  text: "text-purple-700",
-                  dot: "bg-purple-500",
-                  badge: "bg-purple-50 text-purple-700 border-purple-200"
-                },
-                doctor: {
-                  border: "border-l-[6px] border-l-indigo-600",
-                  bgGlow: "from-indigo-500/10 via-transparent to-transparent",
-                  text: "text-indigo-700",
-                  dot: "bg-indigo-500",
-                  badge: "bg-indigo-50 text-indigo-700 border-indigo-200"
-                },
-                clinician: {
-                  border: "border-l-[6px] border-l-blue-600",
-                  bgGlow: "from-blue-500/10 via-transparent to-transparent",
-                  text: "text-blue-700",
-                  dot: "bg-blue-500",
-                  badge: "bg-blue-50 text-blue-700 border-blue-200"
-                },
-                receptionist: {
-                  border: "border-l-[6px] border-l-amber-500",
-                  bgGlow: "from-amber-500/10 via-transparent to-transparent",
-                  text: "text-amber-700",
-                  dot: "bg-amber-500",
-                  badge: "bg-amber-50 text-amber-700 border-amber-250"
-                },
-                frontdesk: {
-                  border: "border-l-[6px] border-l-orange-500",
-                  bgGlow: "from-orange-500/10 via-transparent to-transparent",
-                  text: "text-orange-700",
-                  dot: "bg-orange-500",
-                  badge: "bg-orange-50 text-orange-700 border-orange-200"
-                },
-                accountant: {
-                  border: "border-l-[6px] border-l-emerald-600",
-                  bgGlow: "from-emerald-500/10 via-transparent to-transparent",
-                  text: "text-emerald-700",
-                  dot: "bg-emerald-500",
-                  badge: "bg-emerald-50 text-emerald-700 border-emerald-200"
-                }
+              const roleIcons: Record<string, any> = {
+                admin: Shield,
+                doctor: Stethoscope,
+                clinician: Stethoscope,
+                receptionist: Briefcase,
+                frontdesk: Briefcase,
+                accountant: Calculator
               };
 
-              const theme = roleTheme[usr.role as keyof typeof roleTheme] || {
-                border: "border-l-[6px] border-l-slate-400",
-                bgGlow: "from-slate-500/5 via-transparent to-transparent",
-                text: "text-slate-700",
-                dot: "bg-slate-400",
-                badge: "bg-slate-50 text-slate-650 border-slate-200"
+              const roleLabels: Record<string, string> = {
+                admin: "Admin",
+                doctor: "Doctor",
+                clinician: "Dentist",
+                receptionist: "Reception",
+                frontdesk: "Front Desk",
+                accountant: "Accounting"
               };
 
               return (
-                <div
+                <motion.div
                   key={usr.id}
-                  className={`bg-white rounded-2xl border border-slate-200/80 ${theme.border} shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group relative p-5 ${
-                    isSelf ? "ring-2 ring-blue-500/35 bg-blue-50/5" : ""
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  className={`relative flex flex-col p-6 gap-6 bg-white/90 backdrop-blur-2xl rounded-[32px] transition-all duration-300 group overflow-hidden ${
+                    isSelf 
+                      ? 'border border-blue-400/40 shadow-[0_16px_40px_-12px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/10' 
+                      : 'border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.08)] hover:-translate-y-1'
                   }`}
                 >
-                  {/* Subtle Background Glow for dynamic premium feel */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${theme.bgGlow} opacity-30 pointer-events-none transition-opacity duration-300 group-hover:opacity-60`} />
-
-                  {/* 1. Header Row (Avatar, Name, Room Location) */}
-                  <div className="relative z-10 flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3.5">
-                      {/* Avatar with Status Ring */}
-                      <div className="relative shrink-0">
-                        <div className="p-0.5 bg-gradient-to-tr from-slate-200 to-slate-100 rounded-xl shadow-xs">
-                          <img
-                            src={finalAvatar}
-                            alt={usr.name}
-                            className="w-14 h-14 rounded-xl object-cover bg-slate-50 block transition-transform duration-300 group-hover:scale-105"
-                          />
-                        </div>
-                        {/* Active Status Badge */}
-                        <div className="absolute -bottom-1 -right-1">
-                          <span className="flex h-5 w-5 relative">
-                            {usr.isActive ? (
-                              <>
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-500 border border-white items-center justify-center shadow-xs">
-                                  <Check size={8} className="text-white font-black" />
-                                </span>
-                              </>
-                            ) : (
-                              <span className="relative inline-flex rounded-full h-5 w-5 bg-amber-500 border border-white items-center justify-center shadow-xs">
-                                <AlertTriangle size={8} className="text-white font-black" />
-                              </span>
-                            )}
+                  {/* Header Section */}
+                  <div className="flex items-start justify-between">
+                    <div className="relative">
+                      <motion.div 
+                        whileHover={{ scale: 1.05 }}
+                        className="w-20 h-20 rounded-full border-[3px] border-white shadow-sm overflow-hidden bg-slate-100 ring-1 ring-slate-200/50"
+                      >
+                        <img src={finalAvatar} alt={usr.name} className="w-full h-full object-cover" />
+                      </motion.div>
+                      <div className={`absolute bottom-0 right-0 w-6 h-6 rounded-full border-[3px] border-white shadow-sm flex items-center justify-center ${usr.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                        {usr.isActive ? <div className="w-2 h-2 bg-white rounded-full" /> : <div className="w-2.5 h-0.5 bg-white rounded-full" />}
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="flex items-center gap-2">
+                        {isSelf && (
+                          <span className="px-3 py-1 rounded-full bg-blue-50/80 text-blue-600 border border-blue-200/50 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            You
                           </span>
-                        </div>
+                        )}
+                        {isOwner && (
+                          <span className="px-3 py-1 rounded-full bg-indigo-50/80 text-indigo-600 border border-indigo-200/50 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+                            <Shield size={11} className="text-indigo-500" />
+                            Owner
+                          </span>
+                        )}
                       </div>
-
-                      {/* Name & Specialty Info */}
-                      <div>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="font-extrabold text-slate-800 text-sm tracking-tight leading-tight transition-colors group-hover:text-blue-600">
-                            {usr.name}
-                          </h4>
-                          {isSelf && (
-                            <span className="text-[7.5px] font-black uppercase bg-gradient-to-r from-blue-600 to-indigo-650 text-white px-2 py-0.5 rounded-full shadow-xs">
-                              You
-                            </span>
-                          )}
-                          {isOwner && (
-                            <span className="text-[7.5px] font-black uppercase bg-gradient-to-r from-purple-600 to-indigo-650 text-white px-2 py-0.5 rounded-full shadow-xs">
-                              Owner
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[9.5px] uppercase font-bold text-slate-400 tracking-wider mt-1">
-                          {usr.specialty || (usr.role === "clinician" ? "Dentist Practitioner" : usr.role === "admin" ? "Practice Owner & Specialist" : "Clinic Front Desk Officer")}
-                        </p>
-                      </div>
+                      
+                      {usr.assignedRoom && (
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50/80 hover:bg-slate-100 border border-slate-200/60 text-slate-700 text-[11px] font-bold transition-colors cursor-pointer shadow-xs active:scale-95">
+                          <MapPin size={12} className="text-blue-500" />
+                          {usr.assignedRoom}
+                          <ChevronDown size={11} className="text-slate-400" />
+                        </button>
+                      )}
                     </div>
-
-                    {/* Room Assignment (Right aligned) */}
-                    {usr.assignedRoom && (
-                      <span className="shrink-0 px-2.5 py-1 bg-slate-50 border border-slate-200 text-slate-650 text-[9px] font-extrabold uppercase tracking-wider rounded-xl flex items-center gap-1 shadow-3xs">
-                        <MapPin size={9} className="text-indigo-500" />
-                        <span>{usr.assignedRoom}</span>
-                      </span>
-                    )}
                   </div>
 
-                  {/* 2. Contact Details (Layout Efficient Interactive Grid) */}
-                  <div className="relative z-10 mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] text-slate-500 font-semibold border-t border-b border-slate-100 py-3">
-                    <a
-                      href={usr.phone ? `tel:${usr.phone}` : "#"}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded-xl transition-all duration-200 ${
-                        usr.phone 
-                          ? 'hover:bg-blue-50 hover:text-blue-600 border border-transparent hover:border-blue-200/40 text-slate-600' 
-                          : 'cursor-not-allowed opacity-50'
-                      }`}
-                      title={usr.phone ? `Call ${usr.name}` : "No phone linked"}
-                      onClick={(e) => !usr.phone && e.preventDefault()}
-                    >
-                      <Smartphone size={13} className={usr.phone ? "text-blue-500" : "text-slate-400"} />
-                      <span className="truncate">{usr.phone || "No phone listed"}</span>
-                    </a>
+                  {/* Information Section */}
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-[22px] font-bold text-slate-900 tracking-tight leading-none group-hover:text-blue-600 transition-colors">
+                      {usr.name}
+                    </h3>
+                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-1">
+                      {usr.specialty || (usr.role === "clinician" ? "Dentist Practitioner" : usr.role === "admin" ? "Practice Owner & Specialist" : "Clinic Front Desk Officer")}
+                    </p>
+                  </div>
 
-                    <a
-                      href={usr.email ? `mailto:${usr.email}` : "#"}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded-xl transition-all duration-200 ${
-                        usr.email 
-                          ? 'hover:bg-blue-50 hover:text-blue-600 border border-transparent hover:border-blue-200/40 text-slate-600' 
-                          : 'cursor-not-allowed opacity-50'
-                      }`}
-                      title={usr.email ? `Mail ${usr.name}` : "No email listed"}
-                      onClick={(e) => !usr.email && e.preventDefault()}
+                  {/* Contact Cards Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <a 
+                      href={usr.phone ? `tel:${usr.phone}` : '#'} 
+                      onClick={e => !usr.phone && e.preventDefault()} 
+                      className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${usr.phone ? 'bg-slate-50/50 border-slate-100 hover:bg-blue-50/50 hover:border-blue-200/50 group/contact cursor-pointer shadow-xs' : 'bg-slate-50/30 border-transparent opacity-60 cursor-not-allowed'}`}
                     >
-                      <Mail size={13} className={usr.email ? "text-indigo-500" : "text-slate-400"} />
-                      <span className="truncate">{usr.email || "No email listed"}</span>
+                      <div className={`p-2 rounded-xl ${usr.phone ? 'bg-white shadow-xs text-blue-500' : 'bg-slate-100 text-slate-400'}`}>
+                        <Phone size={14} />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Phone</span>
+                        <span className="text-[12px] font-bold text-slate-700 truncate">{usr.phone || "Missing"}</span>
+                      </div>
+                    </a>
+                    <a 
+                      href={usr.email ? `mailto:${usr.email}` : '#'} 
+                      onClick={e => !usr.email && e.preventDefault()} 
+                      className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${usr.email ? 'bg-slate-50/50 border-slate-100 hover:bg-indigo-50/50 hover:border-indigo-200/50 group/contact cursor-pointer shadow-xs' : 'bg-slate-50/30 border-transparent opacity-60 cursor-not-allowed'}`}
+                    >
+                      <div className={`p-2 rounded-xl ${usr.email ? 'bg-white shadow-xs text-indigo-500' : 'bg-slate-100 text-slate-400'}`}>
+                        <Mail size={14} />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email</span>
+                        <span className="text-[12px] font-bold text-slate-700 truncate">{usr.email || "Missing"}</span>
+                      </div>
                     </a>
                   </div>
 
-                  {/* 3. Shift Grid & Scheduler */}
-                  <div className="relative z-10 mt-3.5 bg-slate-50/65 border border-slate-200/50 p-3 rounded-2xl space-y-2.5">
-                    <div className="flex items-center justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                      <div className="flex items-center gap-1.5">
-                        <Clock size={11} className="text-indigo-500" />
-                        <span>Shift Hours</span>
+                  {/* Availability Scheduler Card */}
+                  <div className="flex flex-col p-4 rounded-[24px] bg-slate-50/80 border border-slate-100/50 gap-4 shadow-inner">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-slate-700">
+                        <Clock size={14} className="text-blue-500" />
+                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Availability</span>
                       </div>
-                      <span className="font-mono text-slate-700 font-extrabold bg-white px-2 py-0.5 rounded-lg border border-slate-200/40">
-                        {usr.hours || "On-Call Duty"}
+                      <span className="text-[10px] font-bold text-slate-800 bg-white px-2.5 py-1 rounded-full shadow-xs border border-slate-200/40 font-mono">
+                        {usr.hours || "On-Call"}
                       </span>
                     </div>
 
-                    <div className="flex gap-1 justify-between">
-                      {weekDays.map((day) => {
-                        const isScheduled = usr.days?.includes(day);
+                    {/* Day Segmented Control */}
+                    <div className="flex items-center gap-1 p-1 bg-slate-200/40 rounded-xl border border-slate-200/20">
+                      {weekDays.map(day => {
+                        const isActive = usr.days?.includes(day);
                         return (
-                          <span
-                            key={day}
-                            className={`flex-1 text-center py-1 rounded-lg text-[8px] font-black uppercase transition-all duration-200 border ${
-                              isScheduled
-                                ? "bg-gradient-to-r from-blue-600 to-indigo-650 text-white border-transparent shadow-2xs shadow-blue-100/50 scale-105"
-                                : "bg-white text-slate-350 border-slate-200/40 hover:bg-slate-50/50"
-                            }`}
-                            title={`${usr.name} is ${isScheduled ? 'scheduled' : 'off'} on ${day}`}
+                          <div 
+                            key={day} 
+                            className="relative flex-1 flex justify-center items-center py-1.5 z-0"
                           >
-                            {day.substring(0, 3)}
-                          </span>
+                            {isActive && (
+                              <motion.div 
+                                layoutId={`active-day-${usr.id}`}
+                                className="absolute inset-0 bg-white rounded-lg shadow-xs z-[-1]"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                              />
+                            )}
+                            <span className={`text-[9px] font-black transition-all ${
+                              isActive ? 'text-blue-600' : 'text-slate-400'
+                            }`}>
+                              {day.substring(0, 3).toUpperCase()}
+                            </span>
+                          </div>
                         );
                       })}
                     </div>
-                  </div>
+                    </div>
 
-                  {/* 4. Footer Badges & Administrative Controls */}
-                  <div className="relative z-10 mt-4 border-t border-slate-100 pt-3 flex flex-wrap items-center justify-between gap-3">
-                    {/* Role Badges */}
-                    <div className="flex flex-wrap items-center gap-1">
+                    {/* Roles & Action Section */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100/60 mt-auto">
+                    {/* Role Collection */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {[usr.role, usr.role2].map((role, rIdx) => {
                         if (!role || (role as string) === "none") return null;
-
-                        const roleMeta = roleTheme[role as keyof typeof roleTheme] || {
-                          badge: "bg-slate-50 text-slate-650 border-slate-200",
-                          dot: "bg-slate-400",
-                          text: "text-slate-600"
-                        };
+                        const Icon = roleIcons[role] || UserIcon;
 
                         return (
-                          <span
-                            key={rIdx}
-                            className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-full border flex items-center gap-1.5 tracking-wider shadow-3xs ${roleMeta.badge}`}
-                          >
-                            <span className={`w-1 h-1 rounded-full ${roleMeta.dot}`} />
-                            <span>{role === "admin" ? "Admin" : role === "doctor" ? "Doctor" : role === "clinician" ? "Dentist" : role === "receptionist" ? "Reception" : role === "frontdesk" ? "Front Desk" : role === "accountant" ? "Accounting" : role}</span>
-                          </span>
+                          <div key={rIdx} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/50 text-slate-600 shadow-3xs">
+                            <Icon size={12} className="text-slate-400" />
+                            <span className="text-[10px] font-bold uppercase tracking-tight">{roleLabels[role] || role}</span>
+                          </div>
                         );
                       })}
-
                       {!usr.isActive && (
-                        <span className="bg-rose-50 text-rose-700 border-rose-150 text-[8px] tracking-wider uppercase font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-3xs">
-                          <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
-                          <span>Revoked</span>
-                        </span>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200/50 shadow-3xs">
+                          <AlertTriangle size={11} className="text-rose-500" />
+                          <span className="text-[10px] font-black uppercase tracking-tight">Revoked</span>
+                        </div>
                       )}
                     </div>
 
-                    {/* Action Controls */}
-                    <div className="flex items-center justify-end gap-1.5 select-none self-end sm:self-auto">
+                    {/* Administrative Action Icons */}
+                    <div className="flex items-center gap-2">
                       {isAdmin ? (
                         <>
-                          {!isOwner ? (
+                          <button
+                            onClick={() => handleOpenEditModal(usr)}
+                            className="flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-100 hover:bg-blue-700 transition-all cursor-pointer active:scale-90"
+                            title="Edit Personnel Profile"
+                          >
+                            <Settings size={18} />
+                          </button>
+                          {!isOwner && (
                             <button
-                              type="button"
                               onClick={() => {
-                                toggleStaffStatus(usr.id);
-                                alert(`Status for ${usr.name} changed successfully.`);
+                                if (confirm(`Delete personnel record for ${usr.name}?`)) {
+                                  deleteStaff(usr.id);
+                                }
                               }}
-                              className={`px-2.5 py-1.5 text-[8.5px] font-black uppercase rounded-xl border cursor-pointer select-none transition-all duration-205 flex items-center gap-1 shadow-2xs hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 ${
-                                usr.isActive
-                                  ? "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200"
-                                  : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
-                              }`}
-                              title={usr.isActive ? "Revoke System Credentials" : "Authorize System Credentials"}
+                              className="flex items-center justify-center w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all cursor-pointer active:scale-90"
+                              title="Remove Personnel"
                             >
-                              <Shield size={9} />
-                              <span>{usr.isActive ? "Revoke" : "Authorize"}</span>
+                              <Trash2 size={18} />
                             </button>
-                          ) : (
-                            <span className="text-[8px] uppercase font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1.5 rounded-xl select-none flex items-center gap-1 shadow-3xs">
-                              <UserCheck size={9} className="text-blue-500" />
-                              <span>System Owner</span>
-                            </span>
-                          )}
-
-                          {currentUser?.id === "usr-1" || !isOwner ? (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditModal(usr)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[8.5px] uppercase px-2.5 py-1.5 rounded-xl border border-blue-700/10 cursor-pointer transition-all duration-205 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-1"
-                                title={`Edit ${usr.name}'s profile details`}
-                              >
-                                <Settings size={9} className="transition-transform duration-300 group-hover:rotate-45" />
-                                <span>Edit</span>
-                              </button>
-
-                              {!isOwner && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (confirm(`CRITICAL ACTION: Are you absolutely certain you want to permanently delete the personnel record for ${usr.name}? This action is IRREVERSIBLE.`)) {
-                                      if (confirm(`FINAL VERIFICATION: Proceed with deleting ${usr.name}?`)) {
-                                        deleteStaff(usr.id);
-                                      }
-                                    }
-                                  }}
-                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl border border-rose-200 hover:border-rose-300 transition-all cursor-pointer flex items-center justify-center shadow-3xs hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0"
-                                  title="Delete personnel record permanently"
-                                >
-                                  <Trash2 size={11} />
-                                </button>
-                              )}
-                            </>
-                          ) : (
-                            <span className="text-[8px] uppercase font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1.5 rounded-xl select-none italic flex items-center gap-1" title="Only Owner can modify their own record">
-                              <Lock size={9} />
-                              <span>Locked</span>
-                            </span>
                           )}
                         </>
                       ) : (
-                        <span className="text-[8px] uppercase font-bold text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1.5 rounded-xl italic flex items-center gap-1 select-none">
-                          <Lock size={9} />
-                          <span>Locked</span>
-                        </span>
+                        <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-slate-400">
+                          <Lock size={16} />
+                        </div>
                       )}
                     </div>
-                  </div>
-                </div>
+                    </div>
+
+                </motion.div>
               );
             })}
           </div>

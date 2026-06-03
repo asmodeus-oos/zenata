@@ -65,7 +65,8 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
     updateProstheticSession,
     updateProstheticLabStatus,
     addPayment,
-    updateOrthoNotes
+    updateOrthoNotes,
+    currentUser
   } = useStore();
 
   // Search & Filter
