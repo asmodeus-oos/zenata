@@ -245,6 +245,7 @@ export const useStore = create<ClinicalState>()(
             await signInAnonymously(auth);
           } catch (e) {
             console.warn("Sync failed: Could not establish gateway session.", e);
+            if (resolveFirestoreReady) resolveFirestoreReady();
             return;
           }
         }
