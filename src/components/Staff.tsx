@@ -1423,16 +1423,21 @@ export default function Staff() {
 
       {/* TAB 2: INTERACTIVE STAFF ONBOARDING WIZARD */}
       {activeTab === "onboarding" && isAdmin && (
-        <div className="bg-white border border-slate-200 rounded-[32px] shadow-sm p-6 md:p-8 space-y-6 max-w-4xl mx-auto">
-          
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.98, y: 10 }}
+          transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
+          className="bg-white/95 backdrop-blur-2xl border border-white/60 rounded-[32px] shadow-[0_24px_60px_-12px_rgba(0,0,0,0.15)] p-6 md:p-8 space-y-6 max-w-4xl mx-auto overflow-hidden relative"
+        >
           {/* HEADER ROW */}
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex items-center justify-between border-b border-slate-100/60 pb-4">
             <div>
-              <h3 className="text-base font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
-                <UserPlus size={18} className="text-blue-500" />
-                <span>Onboarding Wizard: Step {wizardStep} of 4</span>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <UserPlus size={24} className="text-blue-500" />
+                <span>Onboarding Wizard</span>
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5 tracking-tight font-medium">Verify system parameters, identity access levels, and roster availability on the fly.</p>
+              <p className="text-[13px] text-slate-500 mt-1 font-medium">Verify system parameters, identity access levels, and roster availability.</p>
             </div>
             
             <button
@@ -1441,15 +1446,15 @@ export default function Staff() {
                   setActiveTab("directory");
                 }
               }}
-              className="p-1.5 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              className="p-2 bg-slate-100/50 hover:bg-slate-200/50 rounded-full text-slate-400 hover:text-slate-700 transition-colors cursor-pointer active:scale-90"
               title="Abort wizard"
             >
-              <X size={16} />
+              <X size={20} />
             </button>
           </div>
 
           {/* STEPPER MAP BAR */}
-          <div className="grid grid-cols-4 gap-2 pb-2 select-none">
+          <div className="grid grid-cols-4 gap-3 pb-2 select-none relative z-10">
             {[
               { num: 1, label: "Identity & Role", desc: "Credentials" },
               { num: 2, label: "Specialty & Contact", desc: "Details" },
@@ -1459,315 +1464,386 @@ export default function Staff() {
               const active = wizardStep === step.num;
               const passed = wizardStep > step.num;
               return (
-                <div key={step.num} className="space-y-1.5 flex flex-col justify-between items-start">
-                  <div className={`h-1.5 w-full rounded-full transition-all ${
-                    active ? "bg-blue-600 shadow-sm" : passed ? "bg-emerald-500" : "bg-slate-100"
+                <div key={step.num} className="space-y-2 flex flex-col items-start relative">
+                  <div className={`h-1.5 w-full rounded-full transition-all duration-500 ${
+                    active ? "bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" : passed ? "bg-emerald-500" : "bg-slate-100"
                   }`} />
                   <div className="hidden sm:block">
-                    <p className={`text-[10px] font-black leading-none ${active ? "text-blue-600" : passed ? "text-emerald-600" : "text-slate-400"}`}>
-                      {step.num}. {step.label}
+                    <p className={`text-[10px] font-black uppercase tracking-wider transition-colors duration-300 ${active ? "text-blue-600" : passed ? "text-emerald-600" : "text-slate-400"}`}>
+                      Step {step.num}: {step.label}
                     </p>
-                    <span className="text-[8.5px] text-slate-400">{step.desc}</span>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* FORM CONTAINER - SUBMITS STEP OR MULTI-STEP TO REDUCE BLANK SPACE */}
-          <form onSubmit={handleRegisterWizard} className="space-y-6 pt-3 min-h-[300px]">
-            
-            {/* STEP 1: IDENTITY ACCESS CREDENTIALS */}
-            {wizardStep === 1 && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold text-slate-500 flex items-center gap-1">
-                      <span>Full Legal Name</span>
-                      <strong className="text-red-500">*</strong>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="E.g., Dr. Full Name"
-                      value={wizName}
-                      onChange={(e) => setWizName(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-semibold"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold text-slate-500 flex items-center gap-1">
-                      <span>Username Identifier</span>
-                      <strong className="text-red-500">*</strong>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="E.g., bruce_ortho"
-                      value={wizUsername}
-                      onChange={(e) => setWizUsername(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold text-slate-400">Onboarding Temporary Password</label>
-                    <input
-                      type="password"
-                      placeholder="Defaults to username tag"
-                      value={wizPassword}
-                      onChange={(e) => setWizPassword(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold text-slate-500 block">Primary System Access Level</label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 pt-1 border border-slate-100 rounded-xl p-2 bg-slate-50">
-                      {[
-                        { val: "clinician", label: "Dentist" },
-                        { val: "doctor", label: "Doctor" },
-                        { val: "frontdesk", label: "Front Desk" },
-                        { val: "receptionist", label: "Reception" },
-                        { val: "accountant", label: "Accounting" },
-                        { val: "admin", label: "Admin" }
-                      ].map(r => (
-                        <label 
-                          key={r.val} 
-                          className={`p-2 border rounded-lg flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all ${
-                            wizRole === r.val 
-                              ? "bg-blue-600 text-white border-blue-600 shadow-sm" 
-                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="wizRole"
-                            value={r.val}
-                            checked={wizRole === r.val}
-                            onChange={() => setWizRole(r.val as UserRole)}
-                            className="sr-only"
-                          />
-                          <span className="text-[10px] font-black">{r.label}</span>
+          {/* FORM CONTAINER */}
+          <form onSubmit={handleRegisterWizard} className="flex flex-col min-h-[400px]">
+            <AnimatePresence mode="wait">
+              {/* STEP 1: IDENTITY ACCESS CREDENTIALS */}
+              {wizardStep === 1 && (
+                <motion.div 
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-5 flex-1"
+                >
+                  <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-6 shadow-inner space-y-5">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                      <LucideUser size={14} /> Identity Details
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">
+                          Full Legal Name <strong className="text-rose-500">*</strong>
                         </label>
-                      ))}
+                        <input
+                          type="text"
+                          required
+                          placeholder="E.g., Dr. Full Name"
+                          value={wizName}
+                          onChange={(e) => setWizName(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">
+                          Username Identifier <strong className="text-rose-500">*</strong>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="E.g., bruce_ortho"
+                          value={wizUsername}
+                          onChange={(e) => setWizUsername(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-mono font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Temporary Password</label>
+                        <input
+                          type="password"
+                          placeholder="Defaults to username tag"
+                          value={wizPassword}
+                          onChange={(e) => setWizPassword(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-mono font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-slate-550 block">Optional Secondary Job / Role (Dual Role Option)</label>
-                  <select
-                    value={wizRole2}
-                    onChange={(e) => setWizRole2(e.target.value as "none" | UserRole)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-semibold"
-                  >
-                    <option value="none">No Secondary Role (Single Role)</option>
-                    <option value="clinician">Dentist Practitioner</option>
-                    <option value="doctor">Medical Doctor</option>
-                    <option value="frontdesk">Front Desk Clerk</option>
-                    <option value="receptionist">Receptionist Officer</option>
-                    <option value="accountant">Financial Accountant</option>
-                    <option value="admin">System Administrator Override</option>
-                  </select>
-                  <p className="text-[9.5px] text-slate-400 font-medium">
-                    Supports dual responsibilities (e.g., Staff is both an administrator and a clinical dentist).
-                  </p>
-                </div>
-              </div>
-            )}
+                  <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-6 shadow-inner space-y-5">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                      <Shield size={14} /> Access Levels
+                    </h4>
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Primary System Access Level</label>
+                      <div className="grid grid-cols-2 lg:grid-cols-6 gap-2">
+                        {[
+                          { val: "clinician", label: "Dentist" },
+                          { val: "doctor", label: "Doctor" },
+                          { val: "frontdesk", label: "Front Desk" },
+                          { val: "receptionist", label: "Reception" },
+                          { val: "accountant", label: "Accounting" },
+                          { val: "admin", label: "Admin" }
+                        ].map(r => (
+                          <label 
+                            key={r.val} 
+                            className={`p-3 border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all ${
+                              wizRole === r.val 
+                                ? "bg-blue-600 text-white border-blue-600 shadow-md scale-[1.02]" 
+                                : "bg-white border-slate-200/60 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="wizRole"
+                              value={r.val}
+                              checked={wizRole === r.val}
+                              onChange={() => setWizRole(r.val as UserRole)}
+                              className="sr-only"
+                            />
+                            <span className="text-[11px] font-bold">{r.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
 
-            {/* STEP 2: SPECIALTY & CONTACTS */}
-            {wizardStep === 2 && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold text-slate-500">Contact Telephone</label>
-                    <input
-                      type="text"
-                      placeholder="E.g., +1 (555) 555-0199"
-                      value={wizPhone}
-                      onChange={(e) => setWizPhone(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-mono font-semibold"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold text-slate-500">Practice Email Address</label>
-                    <input
-                      type="email"
-                      placeholder="E.g., doctor@zendenta.com"
-                      value={wizEmail}
-                      onChange={(e) => setWizEmail(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-semibold"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold text-slate-500">Medic specialty Department</label>
-                    <input
-                      type="text"
-                      placeholder="E.g., General & Cosmetic Dentist"
-                      value={wizSpecialty}
-                      onChange={(e) => setWizSpecialty(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-bold"
-                    />
-                    <span className="text-[8px] text-slate-450 block">* Leave empty to dynamically generate specialty classification based on and relative to Security Role level</span>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold text-slate-500">Physical Room Assignment</label>
-                    <select
-                      value={wizRoom}
-                      onChange={(e) => setWizRoom(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-bold cursor-pointer"
-                    >
-                      <option value="">No room assigned</option>
-                      {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
-                        <option key={num} value={`Room ${num}`}>Room {num}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: WORK SCHEDULE ROSTER */}
-            {wizardStep === 3 && (
-              <div className="space-y-5 animate-fade-in">
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 block">Standard Shift Duty Hours</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {[
-                      "08:00 AM - 04:00 PM",
-                      "09:00 AM - 05:00 PM",
-                      "10:00 AM - 06:00 PM"
-                    ].map((shift) => (
-                      <button
-                        key={shift}
-                        type="button"
-                        onClick={() => setWizHours(shift)}
-                        className={`p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                          wizHours === shift 
-                            ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                            : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                        }`}
-                      >
-                        {shift}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block">Weekly Assigned On-Duty Days</span>
-                  <div className="grid grid-cols-2 sm:grid-cols-7 gap-2">
-                    {weekDays.map((day) => {
-                      const isSelected = wizDays.includes(day);
-                      return (
-                        <button
-                          key={day}
-                          type="button"
-                          onClick={() => {
-                            if (isSelected) {
-                              setWizDays(wizDays.filter(d => d !== day));
-                            } else {
-                              setWizDays([...wizDays, day]);
-                            }
-                          }}
-                          className={`p-2.5 border rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all ${
-                            isSelected 
-                              ? "bg-blue-600 text-white border-blue-600 shadow-sm font-bold" 
-                              : "bg-slate-50 border-slate-200 text-slate-650 hover:bg-slate-100/50"
-                          }`}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Optional Secondary Role</label>
+                      <div className="relative">
+                        <select
+                          value={wizRole2}
+                          onChange={(e) => setWizRole2(e.target.value as "none" | UserRole)}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
                         >
-                          <span className="text-xs font-semibold">{day.substring(0, 3)}</span>
-                          <span className="text-[8px] opacity-75 mt-0.5 leading-none">{day}</span>
-                        </button>
-                      );
-                    })}
+                          <option value="none">No Secondary Role (Single Role)</option>
+                          <option value="clinician">Clinical Dentist</option>
+                          <option value="doctor">Medical Doctor</option>
+                          <option value="frontdesk">Front Desk Clerk</option>
+                          <option value="receptionist">Receptionist Officer</option>
+                          <option value="accountant">Financial Accountant</option>
+                          <option value="admin">System Administrator Override</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
 
-            {/* STEP 4: CLINICAL PERSONA / CHOOSE AVATAR */}
-            {wizardStep === 4 && (
-              <div className="space-y-5 animate-fade-in">
-                
-                {/* PREVIEW CONTAINER */}
-                <div className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                  <img 
-                    src={wizAvatarUrl || "https://ui-avatars.com/api/?name=New+Staff&background=2563EB&color=fff"} 
-                    alt="Wizard Preview" 
-                    className="w-20 h-20 rounded-2xl object-cover border-2 border-white bg-slate-100 shadow-md transform group-hover:scale-105 transition-transform"
-                  />
-                  <div className="text-center sm:text-left">
-                    <h4 className="text-sm font-extrabold text-slate-900">{wizName || "Legal Name Pending"}</h4>
-                    <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md inline-block mt-1">
-                      {wizRole === "clinician" ? "Clinical Dentist" : wizRole === "admin" ? "Administrative Master" : "Front Desk Clerk"}
-                    </span>
-                    <p className="text-[10px] text-slate-400 mt-2 font-medium">Selected Avatar photo will represent this staff member across visual teeth logs, billing actions, and schedule grids.</p>
+              {/* STEP 2: SPECIALTY & CONTACTS */}
+              {wizardStep === 2 && (
+                <motion.div 
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-5 flex-1"
+                >
+                  <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-6 shadow-inner space-y-5">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                      <Phone size={14} /> Contact Details
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Telephone Number</label>
+                        <input
+                          type="text"
+                          placeholder="E.g., +1 (555) 555-0199"
+                          value={wizPhone}
+                          onChange={(e) => setWizPhone(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-mono font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Practice Email</label>
+                        <input
+                          type="email"
+                          placeholder="E.g., doctor@zendenta.com"
+                          value={wizEmail}
+                          onChange={(e) => setWizEmail(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                {/* MATRIX OF PRESETS */}
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 block">Select Doctor / Staff Profile Photo Preset</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-                    {avatarPresets.map((avatar) => {
-                      const isSelected = wizAvatarUrl === avatar.url;
-                      return (
-                        <button
-                          key={avatar.name}
-                          type="button"
-                          onClick={() => setWizAvatarUrl(avatar.url)}
-                          className={`p-2 border rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all bg-white hover:bg-slate-50 ${
-                            isSelected ? "border-blue-500 ring-2 ring-blue-50 bg-blue-50/5 font-extrabold" : "border-slate-200"
-                          }`}
-                        >
-                          <img src={avatar.url} alt={avatar.name} className="w-12 h-12 rounded-xl object-cover shadow-xs border bg-slate-50" />
-                          <span className="text-[9px] text-center leading-tight truncate w-full text-slate-600 mt-1 font-semibold">{avatar.name}</span>
-                        </button>
-                      );
-                    })}
+                  <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-6 shadow-inner space-y-5">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                      <Stethoscope size={14} /> Clinical Assignment
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Medical Specialty</label>
+                        <input
+                          type="text"
+                          placeholder="E.g., General & Cosmetic Dentist"
+                          value={wizSpecialty}
+                          onChange={(e) => setWizSpecialty(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                        />
+                        <span className="text-[9px] text-slate-400 ml-1">* Leave empty to dynamically generate based on role</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Physical Room</label>
+                        <div className="relative">
+                          <select
+                            value={wizRoom}
+                            onChange={(e) => setWizRoom(e.target.value)}
+                            className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
+                          >
+                            <option value="">No room assigned</option>
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                              <option key={num} value={`Room ${num}`}>Room {num}</option>
+                            ))}
+                          </select>
+                          <ChevronDown size={14} className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </motion.div>
+              )}
 
-                {/* PASTE CUSTOM PHOTO URL */}
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">OR Enter Custom Photo URL</label>
-                  <input
-                    type="url"
-                    placeholder="Enter custom image format URL (https://...)"
-                    value={wizAvatarUrl}
-                    onChange={(e) => setWizAvatarUrl(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-mono text-blue-800"
-                  />
-                </div>
-              </div>
-            )}
+              {/* STEP 3: WORK SCHEDULE ROSTER */}
+              {wizardStep === 3 && (
+                <motion.div 
+                  key="step3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-5 flex-1"
+                >
+                  <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-6 shadow-inner space-y-6">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                      <Clock size={14} /> Schedule & Roster
+                    </h4>
+                    
+                    <div className="space-y-2.5">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Standard Shift Duty Hours</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {[
+                          "08:00 AM - 04:00 PM",
+                          "09:00 AM - 05:00 PM",
+                          "10:00 AM - 06:00 PM"
+                        ].map((shift) => (
+                          <button
+                            key={shift}
+                            type="button"
+                            onClick={() => setWizHours(shift)}
+                            className={`p-3 rounded-xl border text-[13px] font-bold transition-all cursor-pointer shadow-3xs ${
+                              wizHours === shift 
+                                ? "bg-slate-900 text-white border-slate-900"
+                                : "bg-white border-slate-200/60 hover:bg-slate-50 text-slate-700"
+                            }`}
+                          >
+                            {shift}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Weekly Assigned Days</label>
+                      <div className="flex items-center p-1.5 bg-slate-200/40 rounded-2xl border border-slate-200/30 gap-1 overflow-x-auto">
+                        {weekDays.map((day) => {
+                          const isSelected = wizDays.includes(day);
+                          return (
+                            <button
+                              key={day}
+                              type="button"
+                              onClick={() => {
+                                if (isSelected) {
+                                  setWizDays(wizDays.filter(d => d !== day));
+                                } else {
+                                  setWizDays([...wizDays, day]);
+                                }
+                              }}
+                              className="relative flex-1 min-w-[50px] flex flex-col justify-center items-center py-2.5 rounded-xl cursor-pointer transition-colors z-0 focus:outline-none"
+                            >
+                              {isSelected && (
+                                <motion.div 
+                                  layoutId="wiz-active-day"
+                                  className="absolute inset-0 bg-white rounded-xl shadow-sm z-[-1]"
+                                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                />
+                              )}
+                              <span className={`text-xs font-bold z-10 transition-colors ${isSelected ? 'text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>
+                                {day.substring(0, 3)}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* STEP 4: CLINICAL PERSONA / CHOOSE AVATAR */}
+              {wizardStep === 4 && (
+                <motion.div 
+                  key="step4"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-5 flex-1"
+                >
+                  <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-6 shadow-inner space-y-6">
+                    <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                      <Sparkles size={14} /> Clinical Persona
+                    </h4>
+                    
+                    {/* PREVIEW CONTAINER */}
+                    <div className="flex flex-col sm:flex-row items-center gap-6 p-5 bg-white rounded-[24px] border border-slate-200/60 shadow-sm">
+                      <div className="relative">
+                        <img 
+                          src={wizAvatarUrl || "https://ui-avatars.com/api/?name=New+Staff&background=2563EB&color=fff"} 
+                          alt="Wizard Preview" 
+                          className="w-24 h-24 rounded-full object-cover border-[3px] border-white shadow-md bg-slate-100"
+                        />
+                        <div className="absolute bottom-0 right-1 w-6 h-6 rounded-full border-[3px] border-white shadow-sm bg-emerald-500 flex items-center justify-center">
+                           <div className="w-2 h-2 bg-white rounded-full" />
+                        </div>
+                      </div>
+                      <div className="text-center sm:text-left flex-1">
+                        <h4 className="text-xl font-black text-slate-900 tracking-tight">{wizName || "Legal Name Pending"}</h4>
+                        <span className="text-[11px] font-bold text-blue-600 bg-blue-50/80 border border-blue-200/50 px-3 py-1 rounded-full inline-block mt-2 uppercase tracking-wider">
+                          {wizRole === "clinician" ? "Clinical Dentist" : wizRole === "admin" ? "Administrative Master" : "Front Desk Clerk"}
+                        </span>
+                        <p className="text-[11px] text-slate-400 mt-2 font-medium leading-relaxed">This photo will represent the staff member across visual teeth logs, billing actions, and schedule grids.</p>
+                      </div>
+                    </div>
+
+                    {/* MATRIX OF PRESETS */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Select Preset Photo</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        {avatarPresets.map((avatar) => {
+                          const isSelected = wizAvatarUrl === avatar.url;
+                          return (
+                            <button
+                              key={avatar.name}
+                              type="button"
+                              onClick={() => setWizAvatarUrl(avatar.url)}
+                              className={`p-3 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all border ${
+                                isSelected 
+                                  ? "border-blue-500 ring-2 ring-blue-50 bg-blue-50/20 shadow-md scale-105" 
+                                  : "bg-white border-slate-200/60 hover:bg-slate-50 hover:shadow-sm"
+                              }`}
+                            >
+                              <img src={avatar.url} alt={avatar.name} className="w-14 h-14 rounded-full object-cover shadow-xs border-[2px] border-white bg-slate-50" />
+                              <span className="text-[9px] text-center leading-tight truncate w-full text-slate-600 font-bold">{avatar.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* CUSTOM URL */}
+                    <div className="space-y-1.5 pt-2">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">OR Enter Custom Photo URL</label>
+                      <input
+                        type="url"
+                        placeholder="https://..."
+                        value={wizAvatarUrl}
+                        onChange={(e) => setWizAvatarUrl(e.target.value)}
+                        className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-blue-600 font-mono font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* ERROR / REGISTRATION REASSISTANCE CHECKS */}
             {wizardStep === 4 && (!wizName || !wizUsername) && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-[10px] uppercase font-extrabold text-center">
-                Attention: Legal Name and Username ID must be entered in Step 1 before completing registration.
+              <div className="mt-4 p-4 bg-rose-50/80 border border-rose-200 rounded-xl text-rose-700 text-[11px] uppercase font-black text-center flex items-center justify-center gap-2">
+                <AlertTriangle size={16} className="text-rose-500" />
+                Legal Name and Username ID must be entered in Step 1
               </div>
             )}
 
             {/* BUTTON BAR NAVIGATION */}
-            <div className="pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
-              
+            <div className="pt-6 mt-6 border-t border-slate-100/60 flex items-center justify-between gap-4 relative z-10">
               {wizardStep > 1 ? (
                 <button
                   type="button"
                   onClick={() => setWizardStep(prev => prev - 1)}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border border-slate-200/50"
+                  className="px-6 h-12 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[13px] rounded-xl flex items-center gap-2 transition-all cursor-pointer active:scale-95"
                 >
-                  <ArrowLeft size={14} />
+                  <ArrowLeft size={16} />
                   <span>Go Back</span>
                 </button>
               ) : (
@@ -1778,24 +1854,24 @@ export default function Staff() {
                 <button
                   type="button"
                   onClick={() => setWizardStep(prev => prev + 1)}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-sm border border-blue-700/10"
+                  className="px-8 h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold text-[13px] rounded-xl flex items-center gap-2 transition-all cursor-pointer active:scale-95 shadow-md shadow-slate-200"
                 >
-                  <span>Continue Step</span>
-                  <ArrowRight size={14} />
+                  <span>Continue</span>
+                  <ArrowRight size={16} />
                 </button>
               ) : (
                 <button
                   type="submit"
                   disabled={!wizName || !wizUsername}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-md shadow-emerald-100"
+                  className="px-8 h-12 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:hover:bg-blue-600 text-white font-black text-[13px] rounded-xl flex items-center gap-2 transition-all cursor-pointer active:scale-95 shadow-md shadow-blue-200"
                 >
-                  <CheckCircle size={14} />
-                  <span>Onboard New Colleague</span>
+                  <CheckCircle size={16} />
+                  <span>Onboard Colleague</span>
                 </button>
               )}
             </div>
           </form>
-        </div>
+        </motion.div>
       )}
 
       {/* TAB 3: OWN SECURITY TOKEN & PASSWORDS */}
