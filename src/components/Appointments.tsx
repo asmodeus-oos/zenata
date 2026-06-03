@@ -27,6 +27,7 @@ import {
   MapPin,
   Heart
 } from "lucide-react";
+import { PremiumSelect } from "./ui/PremiumSelect";
 import { Appointment, ProcedureType, AppointmentStatus, Patient } from "../types";
 
 export interface AppointmentsProps {
@@ -408,7 +409,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
 
               {/* Filtering */}
               <div className="flex flex-wrap gap-2.5">
-                <select
+                <PremiumSelect
                   value={filterDoctor}
                   onChange={(e) => setFilterDoctor(e.target.value)}
                   className="p-2 border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none rounded-xl shadow-sm"
@@ -417,9 +418,9 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                   {doctorDetails.map(d => (
                     <option key={d.name} value={d.name}>{d.name}</option>
                   ))}
-                </select>
+                </PremiumSelect>
 
-                <select
+                <PremiumSelect
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                   className="p-2 border border-slate-200 bg-white text-xs font-bold text-slate-700 focus:outline-none rounded-xl shadow-sm"
@@ -430,7 +431,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                   <option value="In chair">In Practice Chair</option>
                   <option value="Completed">Completed</option>
                   <option value="Cancelled">Cancelled</option>
-                </select>
+                </PremiumSelect>
               </div>
             </div>
 
@@ -869,7 +870,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs uppercase font-extrabold text-slate-500">Sex</label>
-                      <select
+                      <PremiumSelect
                         value={sex}
                         onChange={(e) => setSex(e.target.value)}
                         className="w-full p-3 rounded-xl border border-slate-200 text-sm font-semibold bg-white cursor-pointer"
@@ -877,12 +878,12 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
-                      </select>
+                      </PremiumSelect>
                     </div>
                     
                     <div className="space-y-1">
                       <label className="text-xs uppercase font-extrabold text-slate-500">Patient State</label>
-                      <select
+                      <PremiumSelect
                         value={patientState}
                         onChange={(e) => setPatientState(e.target.value as AppointmentStatus)}
                         className="w-full p-3 rounded-xl border border-slate-200 text-sm font-semibold text-emerald-800 bg-white cursor-pointer"
@@ -892,7 +893,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                         <option value="In chair">In Chair (Active Room)</option>
                         <option value="Completed">Completed</option>
                         <option value="Cancelled">Cancelled</option>
-                      </select>
+                      </PremiumSelect>
                     </div>
 
                     <div className="space-y-1 col-span-2">
@@ -1030,7 +1031,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
 
                     <div className="space-y-1 col-span-2">
                       <label className="text-xs uppercase font-extrabold text-slate-500">Procedure Intended</label>
-                      <select
+                      <PremiumSelect
                         value={procedureType}
                         onChange={(e) => setProcedureType(e.target.value as ProcedureType)}
                         className="w-full p-3 rounded-xl border border-slate-200 text-sm font-semibold bg-white text-slate-700 cursor-pointer"
@@ -1041,7 +1042,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                         <option value="Crown & Prosthetic">Crown & Prosthetic Treatment</option>
                         <option value="Orthodontic">Orthodontic Adjustment</option>
                         <option value="Hygiene/Clean">Hygiene Care & Teeth Cleaning</option>
-                      </select>
+                      </PremiumSelect>
                     </div>
                   </div>
 
@@ -1260,7 +1261,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                       <span className="text-sm font-extrabold block">Assign specific tooth</span>
                       <p className="text-slate-500 text-xs">For dental visits focused on a single tooth segment (e.g. pain or molar checkup)</p>
                     </div>
-                    <select
+                    <PremiumSelect
                       value={assignedTooth}
                       onChange={(e) => setAssignedTooth(e.target.value)}
                       className="p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800"
@@ -1269,7 +1270,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                       {Array.from({ length: 32 }, (_, i) => i + 1).map(num => (
                         <option key={num} value={`FDI ${num}`}>FDI Tooth #{num}</option>
                       ))}
-                    </select>
+                    </PremiumSelect>
                   </div>
                 </div>
 
@@ -1356,7 +1357,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                   
                   <div className="space-y-1.5">
                     <label className="text-xs uppercase font-extrabold text-slate-500 block font-bold">Billing Type</label>
-                    <select
+                    <PremiumSelect
                       value={billingType}
                       onChange={(e) => setBillingType(e.target.value as any)}
                       className="w-full p-3 rounded-xl border border-slate-200 text-sm font-semibold bg-white cursor-pointer"
@@ -1364,7 +1365,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                       <option value="Cash">Cash Currency</option>
                       <option value="Card">Visa / Mastercard POS</option>
                       <option value="Bank Transfer">Direct Wire Bank Transfer</option>
-                    </select>
+                    </PremiumSelect>
                   </div>
 
                   <div className="space-y-1.5">
@@ -1750,7 +1751,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-slate-500 block">Payment Method</label>
-                  <select
+                  <PremiumSelect
                     value={admitPaymentMethod}
                     onChange={(e) => setAdmitPaymentMethod(e.target.value as any)}
                     className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white p-2.5 rounded-xl text-xs font-bold text-slate-800 transition-all outline-none"
@@ -1758,7 +1759,7 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                     <option value="Cash">Cash</option>
                     <option value="Card">Card</option>
                     <option value="Bank Transfer">Bank Transfer</option>
-                  </select>
+                  </PremiumSelect>
                 </div>
               </div>
 

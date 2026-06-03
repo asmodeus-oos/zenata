@@ -42,6 +42,7 @@ import {
   ExternalLink,
   UploadCloud
 } from "lucide-react";
+import { PremiumSelect } from "./ui/PremiumSelect";
 import { UserRole, User, DoctorShift } from "../types";
 
 export default function Staff() {
@@ -927,25 +928,40 @@ export default function Staff() {
                     <div className="flex flex-col items-end gap-2">
                       <div className="flex items-center gap-2">
                         {isSelf && (
-                          <span className="px-3 py-1 rounded-full bg-blue-50/80 text-blue-600 border border-blue-200/50 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+                          <motion.span 
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-3.5 py-1.5 rounded-full bg-blue-50/90 text-blue-600 border border-blue-200/60 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs transition-colors hover:bg-blue-100"
+                          >
                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                             You
-                          </span>
+                          </motion.span>
                         )}
                         {isOwner && (
-                          <span className="px-3 py-1 rounded-full bg-indigo-50/80 text-indigo-600 border border-indigo-200/50 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+                          <motion.span 
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-3.5 py-1.5 rounded-full bg-indigo-50/90 text-indigo-600 border border-indigo-200/50 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs transition-colors hover:bg-indigo-100"
+                          >
                             <Shield size={11} className="text-indigo-500" />
                             Owner
-                          </span>
+                          </motion.span>
                         )}
                       </div>
                       
                       {usr.assignedRoom && (
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50/80 hover:bg-slate-100 border border-slate-200/60 text-slate-700 text-[11px] font-bold transition-colors cursor-pointer shadow-xs active:scale-95">
-                          <MapPin size={12} className="text-blue-500" />
-                          {usr.assignedRoom}
-                          <ChevronDown size={11} className="text-slate-400" />
-                        </button>
+                        <div className="w-32">
+                          <PremiumSelect
+                            value={usr.assignedRoom}
+                            onChange={(e) => isAdmin && updateUserProfile(usr.id, { assignedRoom: e.target.value })}
+                            disabled={!isAdmin}
+                            className="!h-8 !px-3 !rounded-full !bg-slate-50/80 !border-slate-200/60 !text-[11px] !font-bold shadow-xs hover:!bg-white"
+                          >
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                              <option key={num} value={`Room ${num}`}>Room {num}</option>
+                            ))}
+                          </PremiumSelect>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1242,7 +1258,7 @@ export default function Staff() {
                   {/* Staff Select Dropdown */}
                   <div className="space-y-1">
                     <label className="text-[10px] uppercase font-bold text-slate-500 block">Select Practitioner</label>
-                    <select
+                    <PremiumSelect
                       required
                       value={sfName}
                       onChange={(e) => {
@@ -1275,7 +1291,7 @@ export default function Staff() {
                           </option>
                         );
                       })}
-                    </select>
+                    </PremiumSelect>
                   </div>
 
                   {/* Specialty / Role field */}
@@ -1379,7 +1395,7 @@ export default function Staff() {
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] uppercase font-bold text-slate-500 block">Physical Room Assignment</label>
-                      <select
+                      <PremiumSelect
                         value={sfRoom}
                         onChange={(e) => setSfRoom(e.target.value)}
                         className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold cursor-pointer focus:ring-1 focus:ring-blue-500"
@@ -1388,7 +1404,7 @@ export default function Staff() {
                         {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
                           <option key={num} value={`Room ${num}`}>Room {num}</option>
                         ))}
-                      </select>
+                      </PremiumSelect>
                     </div>
 
                     {/* FORM ACTION CONTROLS */}
@@ -1836,20 +1852,17 @@ export default function Staff() {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Physical Room <strong className="text-rose-500">*</strong></label>
-                        <div className="relative">
-                          <select
-                            required
-                            value={wizRoom}
-                            onChange={(e) => setWizRoom(e.target.value)}
-                            className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
-                          >
-                            <option value="">-- Assign Room --</option>
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
-                              <option key={num} value={`Room ${num}`}>Room {num}</option>
-                            ))}
-                          </select>
-                          <ChevronDown size={14} className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
-                        </div>
+                        <PremiumSelect
+                          required
+                          value={wizRoom}
+                          onChange={(e) => setWizRoom(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
+                        >
+                          <option value="">-- Assign Room --</option>
+                          {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                            <option key={num} value={`Room ${num}`}>Room {num}</option>
+                          ))}
+                        </PremiumSelect>
                       </div>
                     </div>
                   </div>
@@ -2571,41 +2584,35 @@ export default function Staff() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Primary Role</label>
-                    <div className="relative">
-                      <select
-                        value={editRole}
-                        onChange={(e) => setEditRole(e.target.value as UserRole)}
-                        className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
-                      >
-                        <option value="clinician">Clinical Dentist</option>
-                        <option value="doctor">Medical Doctor</option>
-                        <option value="receptionist">Reception Staff</option>
-                        <option value="frontdesk">Front Desk Check-in</option>
-                        <option value="accountant">Financial Accountant</option>
-                        <option value="admin">System Administrator</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
-                    </div>
+                    <PremiumSelect
+                      value={editRole}
+                      onChange={(e) => setEditRole(e.target.value as UserRole)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
+                    >
+                      <option value="clinician">Clinical Dentist</option>
+                      <option value="doctor">Medical Doctor</option>
+                      <option value="receptionist">Reception Staff</option>
+                      <option value="frontdesk">Front Desk Check-in</option>
+                      <option value="accountant">Financial Accountant</option>
+                      <option value="admin">System Administrator</option>
+                    </PremiumSelect>
                   </div>
                   
                   <div className="space-y-1.5">
                     <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Secondary Role (Optional)</label>
-                    <div className="relative">
-                      <select
-                        value={editRole2}
-                        onChange={(e) => setEditRole2(e.target.value as "none" | UserRole)}
-                        className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
-                      >
-                        <option value="none">-- None --</option>
-                        <option value="clinician">Clinical Dentist</option>
-                        <option value="doctor">Medical Doctor</option>
-                        <option value="receptionist">Reception Staff</option>
-                        <option value="frontdesk">Front Desk Check-in</option>
-                        <option value="accountant">Financial Accountant</option>
-                        <option value="admin">System Administrator</option>
-                      </select>
-                      <ChevronDown size={14} className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
-                    </div>
+                    <PremiumSelect
+                      value={editRole2}
+                      onChange={(e) => setEditRole2(e.target.value as "none" | UserRole)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
+                    >
+                      <option value="none">-- None --</option>
+                      <option value="clinician">Clinical Dentist</option>
+                      <option value="doctor">Medical Doctor</option>
+                      <option value="receptionist">Reception Staff</option>
+                      <option value="frontdesk">Front Desk Check-in</option>
+                      <option value="accountant">Financial Accountant</option>
+                      <option value="admin">System Administrator</option>
+                    </PremiumSelect>
                   </div>
                 </div>
 

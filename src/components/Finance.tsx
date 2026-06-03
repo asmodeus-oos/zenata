@@ -903,7 +903,7 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
             {/* Sorter Selector */}
             <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5">
               <span className="text-[9px] uppercase font-black text-slate-400">Sort:</span>
-              <select
+              <PremiumSelect
                 value={settlementSort}
                 onChange={(e) => setSettlementSort(e.target.value as any)}
                 className="text-[10px] bg-transparent border-none text-slate-700 font-bold focus:outline-none cursor-pointer"
@@ -911,8 +911,9 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
                 <option value="debt-desc">Highest Debt</option>
                 <option value="debt-asc">Lowest Debt</option>
                 <option value="name">Name A-Z</option>
-              </select>
+              </PremiumSelect>
             </div>
+
           </div>
 
         </div>

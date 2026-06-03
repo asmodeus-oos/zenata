@@ -28,6 +28,7 @@ import {
   BellRing,
   AlertCircle
 } from "lucide-react";
+import { PremiumSelect } from "./ui/PremiumSelect";
 import { InventoryItem } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { jsPDF } from "jspdf";
@@ -1131,7 +1132,7 @@ export default function Inventory() {
 
                     {isScanning && (
                       <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
-                        <select 
+                        <PremiumSelect 
                           value={activeCameraId || ""}
                           onChange={(e) => {
                             setActiveCameraId(e.target.value);
@@ -1147,7 +1148,7 @@ export default function Inventory() {
                           ) : (
                             <option value="">No cameras found</option>
                           )}
-                        </select>
+                        </PremiumSelect>
                       </div>
                     )}
 
@@ -1963,7 +1964,7 @@ export default function Inventory() {
             <form onSubmit={handleAddNewItem} className="space-y-4">
               <div className="space-y-1">
                 <label className="text-[10px] uppercase font-bold text-slate-500">Supply Category (Auto Baseline Rule)</label>
-                <select
+                <PremiumSelect
                   value={selectedCategory}
                   onChange={(e) => {
                     const cat = e.target.value;
@@ -1979,7 +1980,7 @@ export default function Inventory() {
                       {catName} (Baseline Default: {categoryDefaults[catName]})
                     </option>
                   ))}
-                </select>
+                </PremiumSelect>
                 <span className="text-[9px] text-slate-400 block font-semibold">
                   Choosing a category auto-prefills the safety limit based on global threshold definitions.
                 </span>
@@ -2011,7 +2012,7 @@ export default function Inventory() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-slate-500">Inventory Unit</label>
-                  <select
+                  <PremiumSelect
                     value={newUnit}
                     onChange={(e) => setNewUnit(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-bold"
@@ -2021,7 +2022,7 @@ export default function Inventory() {
                     <option value="Packs">Packs</option>
                     <option value="Units">Units</option>
                     <option value="Seringes">Syringes</option>
-                  </select>
+                  </PremiumSelect>
                 </div>
               </div>
 
@@ -2142,7 +2143,7 @@ export default function Inventory() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-slate-500">Inventory Unit</label>
-                  <select
+                  <PremiumSelect
                     value={newUnit}
                     onChange={(e) => setNewUnit(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-bold"
@@ -2152,7 +2153,7 @@ export default function Inventory() {
                     <option value="Packs">Packs</option>
                     <option value="Units">Units</option>
                     <option value="Seringes">Syringes</option>
-                  </select>
+                  </PremiumSelect>
                 </div>
               </div>
 
@@ -2426,7 +2427,7 @@ export default function Inventory() {
                     <label className="text-[10px] uppercase font-bold text-slate-500 block">
                       Clinical Operator (Staff Tracking)
                     </label>
-                    <select
+                    <PremiumSelect
                       value={selectedStaffId}
                       onChange={(e) => setSelectedStaffId(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 font-semibold cursor-pointer focus:outline-none"
@@ -2436,7 +2437,7 @@ export default function Inventory() {
                           {u.name} ({u.role}{u.role2 && (u.role2 as string) !== "none" ? ` & ${u.role2}` : ""})
                         </option>
                       ))}
-                    </select>
+                    </PremiumSelect>
                   </div>
                 )}
 
