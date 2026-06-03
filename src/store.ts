@@ -333,16 +333,16 @@ export const useStore = create<ClinicalState>()(
         let found = get().users.find(u => u.username.toLowerCase() === uLower && u.role === role && u.isActive);
         
         // Day 0 Bootstrap Check
-        if (!found && uLower === "owner" && password === "owner123" && role === "admin") {
+        if (!found && (uLower === "owner" || uLower === "admin") && password === "owner123" && role === "admin") {
             const newAdmin: User = {
                 id: "usr-1",
                 name: "System Owner",
-                username: "owner",
+                username: "admin", // Match the Master Key UI fallback
                 role: "admin",
                 isActive: true,
                 password: "owner123"
             };
-            await setDoc(doc(db, "users", newAdmin.id), newAdmin);
+            await setDoc(doc(db, "users", newAdmin.id), newAdmin).catch(e => console.warn("Bootstrap sync failed, but allowing local login", e));
             found = newAdmin;
         }
 

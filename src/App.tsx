@@ -208,7 +208,7 @@ export default function App() {
                         const newOwner: User = {
                             id: "usr-1",
                             name: "System Owner",
-                            username: "owner",
+                            username: "admin",
                             role: "admin",
                             isActive: true,
                             password: "owner123"
