@@ -731,7 +731,7 @@ export default function Staff() {
   });
 
   const isStepValid = () => {
-    if (wizardStep === 1) return wizName.trim() !== "" && wizUsername.trim() !== "";
+    if (wizardStep === 1) return wizName.trim() !== "" && wizUsername.trim() !== "" && wizDoctorId.length === 16;
     if (wizardStep === 2) return true;
     if (wizardStep === 3) return wizDays.length > 0;
     if (wizardStep === 4) return true;
@@ -1633,6 +1633,51 @@ export default function Staff() {
                           className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-mono font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
                         />
                       </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Gender Identification</label>
+                        <div className="flex gap-2">
+                          {["Male", "Female"].map(g => (
+                            <button
+                              key={g}
+                              type="button"
+                              onClick={() => setWizGender(g as "Male" | "Female")}
+                              className={`flex-1 py-3 border rounded-xl text-[11px] font-bold transition-all ${
+                                wizGender === g 
+                                  ? "bg-blue-600 text-white border-blue-600 shadow-md" 
+                                  : "bg-white border-slate-200/60 text-slate-700 hover:bg-slate-50"
+                              }`}
+                            >
+                              {g}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">
+                          16-Digit Doctor ID Identifier <strong className="text-rose-500">*</strong>
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={16}
+                          placeholder="0000 0000 0000 0000"
+                          value={wizDoctorId}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            setWizDoctorId(val);
+                          }}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-mono font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                        />
+                        <div className="flex justify-between items-center px-1">
+                          <span className="text-[9px] text-slate-400 uppercase font-bold">Mandatory medical registration ID</span>
+                          <span className={`text-[9px] font-bold ${wizDoctorId.length === 16 ? 'text-emerald-500' : 'text-rose-400'}`}>
+                            {wizDoctorId.length}/16
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -1671,10 +1716,9 @@ export default function Staff() {
                     </div>
 
                     <div className="space-y-2 pt-2 border-t border-slate-100/60">
-                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Occupation (Optional Secondary Role)</label>
+                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Occupation (Clinical Classification) <strong className="text-rose-500">*</strong></label>
                       <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
                         {[
-                          { val: "none", label: "None" },
                           { val: "clinician", label: "Dentist" },
                           { val: "doctor", label: "Doctor" },
                           { val: "frontdesk", label: "Front Desk" },
@@ -1694,7 +1738,7 @@ export default function Staff() {
                               name="wizRole2"
                               value={r.val}
                               checked={wizRole2 === r.val}
-                              onChange={() => setWizRole2(r.val as "none" | UserRole)}
+                              onChange={() => setWizRole2(r.val as UserRole)}
                               className="sr-only"
                             />
                             <span className="text-[11px] font-bold">{r.label}</span>
