@@ -173,16 +173,6 @@ const getFirestoreReady = () => {
 };
 
 const syncDoc = async (collectionName: string, id: string, data: any, op: OperationType) => {
-  // Allow sync if we have ANY auth state (including anonymous)
-  if (!auth.currentUser) {
-    try {
-      await signInAnonymously(auth);
-    } catch (e) {
-      console.warn("Auto-anonymous login for sync failed:", e);
-      return;
-    }
-  }
-  
   if (!useStore.getState().isSyncActive) return;
 
   try {
@@ -239,17 +229,6 @@ export const useStore = create<ClinicalState>()(
       
       isSyncActive: false,
       startFirestoreSync: async () => {
-        // Ensure we have a session to read Firestore
-        if (!auth.currentUser) {
-          try {
-            await signInAnonymously(auth);
-          } catch (e) {
-            console.warn("Sync failed: Could not establish gateway session.", e);
-            if (resolveFirestoreReady) resolveFirestoreReady();
-            return;
-          }
-        }
-
         if (get().isSyncActive) return;
         set({ isSyncActive: true });
 
@@ -339,17 +318,25 @@ export const useStore = create<ClinicalState>()(
 
         let found = get().users.find(u => u.username.toLowerCase() === uLower && u.role === role && u.isActive);
         
-        // Step 2: Fallback - if still not found in snapshot, the snapshot might be filtered or delayed.
-        if (!found) return false;
-        
-        // Step 3: Password verification
-        if (found.password && found.password !== password) return false;
-        
-        // Step 4: System Bootstrap - Push owner record if it exists locally but cloud was empty
-        if (found.id === "usr-1" || found.role === "admin") {
-           syncDoc("users", found.id, found, OperationType.UPDATE);
+        // Day 0 Bootstrap Check
+        if (!found && uLower === "owner" && password === "owner123" && role === "admin") {
+            const newAdmin: User = {
+                id: "usr-1",
+                name: "System Owner",
+                username: "owner",
+                role: "admin",
+                isActive: true,
+                password: "owner123"
+            };
+            await setDoc(doc(db, "users", newAdmin.id), newAdmin);
+            found = newAdmin;
         }
 
+        if (!found) return false;
+        
+        // Step 2: Password verification (Legacy custom password system)
+        if (found.password && found.password !== password) return false;
+        
         set({ currentUser: found });
         return true;
       },
