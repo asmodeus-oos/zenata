@@ -37,7 +37,7 @@ import {
   Phone,
   Stethoscope,
   Calculator,
-  User as UserIcon,
+  User as LucideUser,
   ChevronDown,
   ExternalLink
 } from "lucide-react";
@@ -910,7 +910,7 @@ export default function Staff() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {[usr.role, usr.role2].map((role, rIdx) => {
                         if (!role || (role as string) === "none") return null;
-                        const Icon = roleIcons[role] || UserIcon;
+                        const Icon = roleIcons[role] || LucideUser;
 
                         return (
                           <div key={rIdx} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/50 text-slate-600 shadow-3xs">
@@ -919,6 +919,7 @@ export default function Staff() {
                           </div>
                         );
                       })}
+
                       {!usr.isActive && (
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200/50 shadow-3xs">
                           <AlertTriangle size={11} className="text-rose-500" />
