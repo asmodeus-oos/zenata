@@ -11,10 +11,8 @@ import Inventory from "./components/Inventory";
 import Settings from "./components/Settings";
 import Performance from "./components/Performance";
 import { PremiumSelect } from "./components/ui/PremiumSelect";
-import { UserRole } from "./types";
-import { auth, functions } from "./firebase";
-import { onAuthStateChanged, signInAnonymously } from "firebase/auth";
-import { httpsCallable } from "firebase/functions";
+import { UserRole, User } from "./types";
+import { supabase } from "./supabase";
 import { 
   Stethoscope, 
   ShieldCheck, 
@@ -70,17 +68,18 @@ export default function App() {
     return liveMatch ? liveMatch.name : currentUser.name;
   }, [currentUser, users]);
 
-  // Monitor Firebase Authentication state and synchronize with clinic context
+  // Monitor Supabase Authentication state and synchronize with clinic context
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const firebaseUser = session.user;
         const email = firebaseUser.email || "";
-        const name = firebaseUser.displayName || email.split("@")[0] || "Practitioner";
+        const name = firebaseUser.user_metadata?.name || email.split("@")[0] || "Practitioner";
         let found = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
         
         if (!found) {
-          // Auto register this Firebase practitioner into the staff list
-          const rawId = `usr-${firebaseUser.uid}`;
+          // Auto register this Supabase practitioner into the staff list
+          const rawId = firebaseUser.id;
           const newU = {
             id: rawId,
             name,
@@ -88,8 +87,8 @@ export default function App() {
             role: "clinician" as const,
             isActive: true,
             email,
-            avatarUrl: firebaseUser.photoURL || "https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&w=150&q=80",
-            specialty: "Clinical Specialist (Firebase)",
+            avatarUrl: firebaseUser.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&w=150&q=80",
+            specialty: "Clinical Specialist (Supabase)",
             days: ["Monday", "Wednesday", "Friday"],
             hours: "09:00 AM - 05:00 PM"
           };
@@ -102,14 +101,14 @@ export default function App() {
         }
         
         setCurrentUser(found);
-        useStore.getState().startFirestoreSync();
+        useStore.getState().startSupabaseSync();
       } else {
         if (!useStore.getState().currentUser) {
-          useStore.getState().stopFirestoreSync();
+          useStore.getState().stopSupabaseSync();
         }
       }
     });
-    return () => unsubscribe();
+    return () => subscription.unsubscribe();
   }, [users, setCurrentUser]);
 
   React.useEffect(() => {
