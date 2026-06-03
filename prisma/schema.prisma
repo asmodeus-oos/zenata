@@ -1,0 +1,394 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL")
+}
+
+// ==========================================
+// IAM & RBAC
+// ==========================================
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  authId       String     @unique // Supabase Auth ID
+  email        String?    @unique
+  phone        String?
+  name         String
+  username     String     @unique
+  avatarUrl    String?
+  isActive     Boolean    @default(true)
+  
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  deletedAt    DateTime?  @map("deleted_at") // Soft delete
+
+  // Relations
+  staffProfile StaffProfile?
+  userRoles    UserRole[]
+  auditLogs    AuditLog[] @relation("ActorLogs")
+  createdStock StockMovement[] @relation("StockCreator")
+  ledgerEntries LedgerEntry[] @relation("LedgerCreator")
+  appointments Appointment[] @relation("DoctorAppointments")
+  
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique // e.g., "Owner", "Admin", "Doctor", "Receptionist"
+  description String?
+  
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  action      String   @unique // e.g., "patients.create", "billing.manage"
+  description String?
+
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  userId String @db.Uuid
+  roleId String @db.Uuid
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+// ==========================================
+// CLINICAL STAFF
+// ==========================================
+
+model StaffProfile {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @unique @db.Uuid
+  specialty    String?
+  assignedRoom String?
+  gender       String?
+  dutyDays     String[] // PostgreSQL Array
+  dutyHours    String?
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("staff_profiles")
+}
+
+// ==========================================
+// PATIENTS
+// ==========================================
+
+model Patient {
+  id             String    @id @default(uuid()) @db.Uuid
+  name           String
+  phone          String
+  whatsapp       String?
+  email          String?
+  dob            DateTime  @db.Date
+  gender         String
+  address        String?
+  occupation     String?
+  avatarUrl      String?
+
+  // Medical History
+  riskLevel      String    @default("Low")
+  allergies      String?
+  weight         String?
+  height         String?
+  orthoNotes     String?   @db.Text
+
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  // Relations
+  sessions           PatientSession[]
+  fillingRecords     FillingRecord[]
+  extractionRecords  ExtractionRecord[]
+  prostheticRecords  ProstheticRecord[]
+  specialtyRecords   SpecialtyRecord?
+  appointments       Appointment[]
+  financialRecords   FinancialRecord[]
+  ledgerEntries      LedgerEntry[]
+
+  @@index([name])
+  @@index([phone])
+  @@map("patients")
+}
+
+// ==========================================
+// CLINICAL RECORDS & TREATMENTS
+// ==========================================
+
+model PatientSession {
+  id            String   @id @default(uuid()) @db.Uuid
+  patientId     String   @db.Uuid
+  date          DateTime @db.Date
+  time          String
+  procedureType String
+  doctorName    String
+  notes         String   @db.Text
+  quickNotes    String?
+
+  patient       Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@map("patient_sessions")
+}
+
+model FillingRecord {
+  id          String   @id @default(uuid()) @db.Uuid
+  patientId   String   @db.Uuid
+  toothNumber Int
+  material    String   // Composite, Amalgam, GIC
+  surfaces    String[] // O, M, D, B, L
+  cost        Decimal  @db.Decimal(10, 2)
+  date        DateTime @db.Date
+  notes       String?  @db.Text
+
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("filling_records")
+}
+
+model ExtractionRecord {
+  id          String   @id @default(uuid()) @db.Uuid
+  patientId   String   @db.Uuid
+  toothNumber Int
+  type        String   // Simple, Surgical, Impaction
+  reason      String
+  complexity  String   // Low, Medium, High
+  postOpStatus String?
+  cost        Decimal  @db.Decimal(10, 2)
+  date        DateTime @db.Date
+
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("extraction_records")
+}
+
+model ProstheticRecord {
+  id              String   @id @default(uuid()) @db.Uuid
+  patientId       String   @db.Uuid
+  toothNumber     Int
+  prostheticType  String
+  labName         String
+  labStatus       String
+  totalCost       Decimal  @db.Decimal(10, 2)
+  paidAmount      Decimal  @db.Decimal(10, 2) @default(0)
+  paymentStatus   String
+  notes           String?  @db.Text
+  date            DateTime @db.Date
+
+  sessions        ProstheticSession[]
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("prosthetic_records")
+}
+
+model ProstheticSession {
+  id                 String   @id @default(uuid()) @db.Uuid
+  prostheticRecordId String   @db.Uuid
+  stage              String
+  date               DateTime @db.Date
+  completed          Boolean  @default(false)
+  notes              String?  @db.Text
+
+  prostheticRecord   ProstheticRecord @relation(fields: [prostheticRecordId], references: [id], onDelete: Cascade)
+
+  @@map("prosthetic_sessions")
+}
+
+model SpecialtyRecord {
+  id              String   @id @default(uuid()) @db.Uuid
+  patientId       String   @unique @db.Uuid
+  endoCases       Json?    // Complex structured nested data
+  perioRecord     Json?
+  orthoRecord     Json?
+  preventiveScore Json?
+  surgeryNotes    String?  @db.Text
+  pediatricNotes  Json?
+  oralMedicine    String?  @db.Text
+  pathology       String?  @db.Text
+  radiology       String?  @db.Text
+
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("specialty_records")
+}
+
+// ==========================================
+// SCHEDULING
+// ==========================================
+
+model Appointment {
+  id             String   @id @default(uuid()) @db.Uuid
+  patientId      String   @db.Uuid
+  doctorId       String   @db.Uuid
+  date           DateTime @db.Date
+  time           String
+  procedureType  String
+  status         String   // Scheduled, Completed, Cancelled, Waiting, In Chair
+  notes          String?  @db.Text
+  quickNotes     String?
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  patient        Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor         User     @relation("DoctorAppointments", fields: [doctorId], references: [id])
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([date, time])
+  @@map("appointments")
+}
+
+// ==========================================
+// FINANCIALS & INVENTORY
+// ==========================================
+
+model FinancialRecord {
+  id              String   @id @default(uuid()) @db.Uuid
+  patientId       String?  @db.Uuid
+  procedureName   String
+  totalCost       Decimal  @db.Decimal(10, 2)
+  paidAmount      Decimal  @db.Decimal(10, 2)
+  remainingAmount Decimal  @db.Decimal(10, 2)
+  paymentStatus   String
+  date            DateTime @db.Date
+  paymentMethod   String
+  receiptNo       String   @unique
+  notes           String?  @db.Text
+  type            String   // income or expense
+  expenseCategory String?
+  expenseType     String?
+  periodType      String?
+  doctorId        String?  @db.Uuid
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  patient         Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
+
+  @@index([date])
+  @@index([patientId])
+  @@map("financial_records")
+}
+
+model LedgerEntry {
+  id                 String   @id @default(uuid()) @db.Uuid
+  type               String   // payment, refund, charge, adjustment
+  amount             Decimal  @db.Decimal(10, 2)
+  currency           String   @default("USD")
+  patientId          String   @db.Uuid
+  relatedTreatmentId String?  @db.Uuid
+  notes              String?  @db.Text
+  
+  createdBy          String   @db.Uuid
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  patient            Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  creator            User     @relation("LedgerCreator", fields: [createdBy], references: [id])
+
+  @@map("ledger_entries")
+}
+
+model InventoryItem {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  quantity       Int
+  unit           String
+  minQty         Int
+  expiryDate     DateTime? @db.Date
+  batchNo        String?
+  suggestedFirst Boolean  @default(false)
+  pricePerUnit   Decimal? @db.Decimal(10, 2)
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  movements      StockMovement[]
+
+  @@map("inventory_items")
+}
+
+model StockMovement {
+  id         String   @id @default(uuid()) @db.Uuid
+  itemId     String   @db.Uuid
+  type       String   // add, consume, adjust
+  quantity   Int
+  reason     String
+  
+  createdBy  String   @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  item       InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  creator    User          @relation("StockCreator", fields: [createdBy], references: [id])
+
+  @@index([itemId])
+  @@map("stock_movements")
+}
+
+// ==========================================
+// SYSTEM
+// ==========================================
+
+model ClinicSetting {
+  key   String @id
+  value Json
+
+  @@map("clinic_settings")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  actorId      String   @db.Uuid
+  actorRole    String
+  action       String
+  resourceType String
+  resourceId   String
+  metadata     Json?
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  actor        User     @relation("ActorLogs", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  timestamp DateTime @default(now())
+  user      String
+  action    String
+  details   String   @db.Text
+
+  @@map("activity_logs")
+}
