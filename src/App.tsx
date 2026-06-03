@@ -10,6 +10,7 @@ import Staff from "./components/Staff";
 import Inventory from "./components/Inventory";
 import Settings from "./components/Settings";
 import Performance from "./components/Performance";
+import { PremiumSelect } from "./components/ui/PremiumSelect";
 import { UserRole } from "./types";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -306,7 +307,7 @@ export default function App() {
 
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-slate-500 block">System Authority</label>
-                  <select
+                  <PremiumSelect
                     value={loginRole}
                     onChange={(e) => setLoginRole(e.target.value as UserRole)}
                     className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-stone-700 focus:outline-none"
@@ -314,7 +315,7 @@ export default function App() {
                     <option value="admin">Administrator Access</option>
                     <option value="clinician">Clinical Practitioner</option>
                     <option value="frontdesk">Frontdesk Reception Clerk</option>
-                  </select>
+                  </PremiumSelect>
                 </div>
 
                 {loginError && (

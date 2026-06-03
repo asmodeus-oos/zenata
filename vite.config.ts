@@ -19,17 +19,22 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
     build: {
+      target: 'esnext',
+      cssCodeSplit: true,
+      sourcemap: false,
+      minify: true,
       rollupOptions: {
         output: {
           manualChunks: {
-            vendor: ['react', 'react-dom'],
-            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-            charts: ['recharts'],
-            ui: ['lucide-react', 'motion/react'],
+            'vendor-react': ['react', 'react-dom'],
+            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+            'vendor-ui': ['lucide-react', 'motion/react'],
+            'vendor-charts': ['recharts', 'recharts/lib/cartesian/Bar'],
+            'vendor-utils': ['zustand', 'jspdf', 'html5-qrcode'],
           },
         },
       },
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 2000,
     },
   };
 });

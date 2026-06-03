@@ -223,8 +223,18 @@ export const useStore = create<ClinicalState>()(
 
         const unsubscribes: (() => void)[] = [];
 
-        const handleOnline = () => { if (!get().offlineSimulated) set({ isOnline: true }); };
-        const handleOffline = () => set({ isOnline: false });
+        // Optimized Network Awareness
+        const handleOnline = () => { 
+          if (!get().offlineSimulated) {
+            set({ isOnline: true });
+            enableNetwork(db).catch(() => {});
+          }
+        };
+        const handleOffline = () => {
+          set({ isOnline: false });
+          disableNetwork(db).catch(() => {});
+        };
+
         if (typeof window !== "undefined") {
           window.addEventListener("online", handleOnline);
           window.addEventListener("offline", handleOffline);
@@ -244,9 +254,10 @@ export const useStore = create<ClinicalState>()(
           activityLogs: initialLogs
         };
 
+        // Parallel Real-time Synchronization
         collections.forEach(col => {
-          const unsub = onSnapshot(collection(db, col), (snapshot) => {
-            if (snapshot.empty) {
+          const unsub = onSnapshot(collection(db, col), { includeMetadataChanges: true }, (snapshot) => {
+            if (snapshot.empty && seeds[col].length > 0) {
               seeds[col].forEach(item => setDoc(doc(db, col, item.id), item).catch(() => {}));
             } else {
               const list: any[] = [];
@@ -257,6 +268,7 @@ export const useStore = create<ClinicalState>()(
           unsubscribes.push(unsub);
         });
 
+        // Clinic Settings Sync
         const unsubSettings = onSnapshot(doc(db, "clinicSettings", "global"), (snapshot) => {
           if (!snapshot.exists()) {
             setDoc(doc(db, "clinicSettings", "global"), initialSettings).catch(() => {});
