@@ -197,7 +197,7 @@ export default function Settings() {
               </span>
               <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2 mt-2">
                 <Database size={16} className="text-blue-500" />
-                <span>Firestore Cache & Diagnostics</span>
+                <span>Database Cache & Diagnostics</span>
               </h3>
               <p className="text-[10px] text-slate-400 mt-0.5 font-semibold leading-relaxed">
                 Configure your persistent clinical browser index, monitor cloud link integrity, and test zero-interruption dental record offline modes.
