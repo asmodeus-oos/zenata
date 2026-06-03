@@ -34,6 +34,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   // Welcome Screen state
   const [showWelcome, setShowWelcome] = useState(false);
@@ -71,41 +72,45 @@ export default function App() {
   // Monitor Supabase Authentication state and synchronize with clinic context
   React.useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const firebaseUser = session.user;
-        const email = firebaseUser.email || "";
-        const name = firebaseUser.user_metadata?.name || email.split("@")[0] || "Practitioner";
-        let found = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-        
-        if (!found) {
-          // Auto register this Supabase practitioner into the staff list
-          const rawId = firebaseUser.id;
-          const newU = {
-            id: rawId,
-            name,
-            username: email.split("@")[0] || "gp_practitioner",
-            role: "clinician" as const,
-            isActive: true,
-            email,
-            avatarUrl: firebaseUser.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&w=150&q=80",
-            specialty: "Clinical Specialist (Supabase)",
-            days: ["Monday", "Wednesday", "Friday"],
-            hours: "09:00 AM - 05:00 PM"
-          };
+      try {
+        if (session?.user) {
+          const firebaseUser = session.user;
+          const email = firebaseUser.email || "";
+          const name = firebaseUser.user_metadata?.name || email.split("@")[0] || "Practitioner";
+          let found = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
           
-          const existing = useStore.getState().users;
-          if (!existing.some(u => u.email?.toLowerCase() === email.toLowerCase())) {
-            useStore.setState({ users: [...existing, newU] });
+          if (!found) {
+            // Auto register this Supabase practitioner into the staff list
+            const rawId = firebaseUser.id;
+            const newU = {
+              id: rawId,
+              name,
+              username: email.split("@")[0] || "gp_practitioner",
+              role: "clinician" as const,
+              isActive: true,
+              email,
+              avatarUrl: firebaseUser.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&w=150&q=80",
+              specialty: "Clinical Specialist (Supabase)",
+              days: ["Monday", "Wednesday", "Friday"],
+              hours: "09:00 AM - 05:00 PM"
+            };
+            
+            const existing = useStore.getState().users;
+            if (!existing.some(u => u.email?.toLowerCase() === email.toLowerCase())) {
+              useStore.setState({ users: [...existing, newU] });
+            }
+            found = newU;
           }
-          found = newU;
+          
+          setCurrentUser(found);
+          useStore.getState().startSupabaseSync();
+        } else {
+          if (!useStore.getState().currentUser) {
+            useStore.getState().stopSupabaseSync();
+          }
         }
-        
-        setCurrentUser(found);
-        useStore.getState().startSupabaseSync();
-      } else {
-        if (!useStore.getState().currentUser) {
-          useStore.getState().stopSupabaseSync();
-        }
+      } finally {
+        setIsAuthLoading(false);
       }
     });
     return () => subscription.unsubscribe();
@@ -153,6 +158,33 @@ export default function App() {
     setSelectedPatientId(patientId);
     setActiveTab("patients");
   };
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg animate-pulse">
+            Z
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <h2 className="text-sm font-bold text-slate-800 tracking-tight">Initializing Session</h2>
+            <div className="w-32 h-1 bg-slate-100 rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ x: "-100%" }}
+                animate={{ x: "100%" }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                className="w-full h-full bg-blue-600"
+              />
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (
