@@ -2159,456 +2159,289 @@ export default function Staff() {
       )}
 
       {/* EDIT STAFF DETAILS MODAL FOR MASTER ADMINS */}
+      <AnimatePresence>
       {editingUser && (
-        <div 
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           onClick={() => setEditingUser(null)}
-          className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-[110] p-4 cursor-pointer"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[110] p-4 cursor-pointer"
         >
-          <div 
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[32px] border border-slate-200 p-6 md:p-8 w-full max-w-lg shadow-2xl relative cursor-default max-h-[92vh] flex flex-col overflow-y-auto custom-scrollbar"
+            className="bg-white/95 backdrop-blur-2xl rounded-[32px] border border-white/60 p-6 md:p-8 w-full max-w-2xl shadow-[0_24px_60px_-12px_rgba(0,0,0,0.15)] relative cursor-default max-h-[92vh] flex flex-col overflow-hidden"
           >
-            <button 
-              onClick={() => setEditingUser(null)}
-              className="absolute top-4 right-4 text-slate-500 hover:text-slate-800 cursor-pointer p-1.5 rounded-full hover:bg-slate-100 transition-colors"
-              title="Close modal"
-            >
-              <X size={20} />
-            </button>
+            {/* Modal Header */}
+            <div className="flex items-start justify-between shrink-0 mb-6 border-b border-slate-100/60 pb-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <ShieldAlert size={20} className="text-blue-500" />
+                  Modify Personnel Record
+                </h3>
+                <p className="text-[13px] text-slate-500 font-medium mt-1">
+                  Managing credentials and scheduling for <strong className="text-slate-800 font-bold">{editingUser.name}</strong>
+                </p>
+              </div>
+              <button 
+                onClick={() => setEditingUser(null)}
+                className="text-slate-400 hover:text-slate-700 bg-slate-100/50 hover:bg-slate-200/50 cursor-pointer p-2 rounded-full transition-colors active:scale-90"
+                title="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-            <h3 className="text-base font-black text-slate-800 flex items-center gap-2 mb-1.5 shrink-0">
-              <ShieldAlert size={18} className="text-blue-500 font-bold" />
-              <span>Modify Personnel record</span>
-            </h3>
-            
-            <p className="text-xs text-slate-500 leading-normal mb-4 font-semibold shrink-0">
-              Overrule credential records and configure weekly roster hours for: <strong className="text-slate-800 font-black">{editingUser.name}</strong>
-            </p>
-
-            <form onSubmit={handleSaveMemberEdit} className="space-y-4 flex-1 overflow-y-auto pr-1 min-h-0">
+            {/* Modal Body (Scrollable) */}
+            <form id="edit-staff-form" onSubmit={handleSaveMemberEdit} className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
               
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Legal Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-semibold focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Username Identifier</label>
-                  <input
-                    type="text"
-                    required
-                    value={editUsername}
-                    onChange={(e) => setEditUsername(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-mono focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Communication Email</label>
-                  <input
-                    type="email"
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-semibold"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Telephone Line</label>
-                  <input
-                    type="text"
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-slate-500">Medical Department specialty</label>
-                <input
-                  type="text"
-                  value={editSpecialty}
-                  onChange={(e) => setEditSpecialty(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-bold"
-                />
-              </div>
-
-              {/* Rich Dual Time Picker */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 space-y-3">
-                <span className="text-[10px] uppercase font-black text-slate-400 block tracking-wider font-semibold">Duty Shift Hours (From / To)</span>
-                
+              {/* Identity & Contact Card */}
+              <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-5 space-y-4 shadow-inner">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                  <LucideUser size={14} /> Identity & Contact
+                </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* FROM TIME */}
                   <div className="space-y-1.5">
-                    <span className="text-[10px] uppercase font-bold text-slate-550 block">From Time</span>
-                    <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200">
-                      {/* Hour */}
-                      <div className="flex flex-col items-center">
-                        <button 
-                          type="button" 
-                          onClick={() => setFromHour(incrementHourFunc)}
-                          className="text-slate-450 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
-                          title="Increase hours"
-                        >▲</button>
-                        <input 
-                          ref={fromHourRefCallback}
-                          type="text" 
-                          value={fromHour} 
-                          onChange={(e) => handleHourChange(e.target.value, setFromHour)}
-                          onBlur={() => handleHourBlur(fromHour, setFromHour, "09")}
-                          className="w-8 text-center text-xs font-black text-slate-855 focus:outline-none cursor-ns-resize"
-                          title="Type hour, or scroll up/down"
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => setFromHour(decrementHourFunc)}
-                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
-                          title="Decrease hours"
-                        >▼</button>
-                      </div>
-                      
-                      <span className="text-slate-400 font-bold">:</span>
-                      
-                      {/* Minute */}
-                      <div className="flex flex-col items-center">
-                        <button 
-                          type="button" 
-                          onClick={() => setFromMinute(incrementMinuteFunc)}
-                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
-                          title="Increase minutes"
-                        >▲</button>
-                        <input 
-                          ref={fromMinRefCallback}
-                          type="text" 
-                          value={fromMinute} 
-                          onChange={(e) => handleMinuteChange(e.target.value, setFromMinute)}
-                          onBlur={() => handleMinuteBlur(fromMinute, setFromMinute, "00")}
-                          className="w-8 text-center text-xs font-black text-slate-855 focus:outline-none cursor-ns-resize"
-                          title="Type minute, or scroll up/down"
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => setFromMinute(decrementMinuteFunc)}
-                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
-                          title="Decrease minutes"
-                        >▼</button>
-                      </div>
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Legal Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Username Identifier</label>
+                    <input
+                      type="text"
+                      required
+                      value={editUsername}
+                      onChange={(e) => setEditUsername(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-mono font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Communication Email</label>
+                    <input
+                      type="email"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Telephone Line</label>
+                    <input
+                      type="text"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-mono font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                    />
+                  </div>
+                </div>
+              </div>
 
-                      {/* AM/PM Toggle */}
-                      <button
-                        type="button"
-                        onClick={() => setFromAmpm(fromAmpm === "AM" ? "PM" : "AM")}
-                        className="ml-auto px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-750 text-[10px] font-black uppercase rounded-lg border border-slate-200 cursor-pointer"
-                        title="Toggle AM/PM"
+              {/* Role & Assignment Card */}
+              <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-5 space-y-4 shadow-inner">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                  <Briefcase size={14} /> Role & Assignment
+                </h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Primary Role</label>
+                    <div className="relative">
+                      <select
+                        value={editRole}
+                        onChange={(e) => setEditRole(e.target.value as UserRole)}
+                        className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
                       >
+                        <option value="clinician">Clinical Dentist</option>
+                        <option value="doctor">Medical Doctor</option>
+                        <option value="receptionist">Reception Staff</option>
+                        <option value="frontdesk">Front Desk Check-in</option>
+                        <option value="accountant">Financial Accountant</option>
+                        <option value="admin">System Administrator</option>
+                      </select>
+                      <ChevronDown size={14} className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Secondary Role (Optional)</label>
+                    <div className="relative">
+                      <select
+                        value={editRole2}
+                        onChange={(e) => setEditRole2(e.target.value as "none" | UserRole)}
+                        className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
+                      >
+                        <option value="none">-- None --</option>
+                        <option value="clinician">Clinical Dentist</option>
+                        <option value="doctor">Medical Doctor</option>
+                        <option value="receptionist">Reception Staff</option>
+                        <option value="frontdesk">Front Desk Check-in</option>
+                        <option value="accountant">Financial Accountant</option>
+                        <option value="admin">System Administrator</option>
+                      </select>
+                      <ChevronDown size={14} className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Medical Specialty</label>
+                    <input
+                      type="text"
+                      value={editSpecialty}
+                      onChange={(e) => setEditSpecialty(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Assigned Clinic Room</label>
+                    <input
+                      type="text"
+                      value={editRoom}
+                      onChange={(e) => setEditRoom(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Schedule & Availability Card */}
+              <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-5 space-y-4 shadow-inner">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                  <Calendar size={14} /> Schedule & Availability
+                </h4>
+                
+                {/* Time Picker Controls */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">From Time</label>
+                    <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200/60 shadow-3xs">
+                      <div className="flex flex-col items-center">
+                        <button type="button" onClick={() => setFromHour(incrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
+                        <input ref={fromHourRefCallback} type="text" value={fromHour} onChange={(e) => handleHourChange(e.target.value, setFromHour)} onBlur={() => handleHourBlur(fromHour, setFromHour, "09")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                        <button type="button" onClick={() => setFromHour(decrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                      </div>
+                      <span className="text-slate-300 font-black text-sm">:</span>
+                      <div className="flex flex-col items-center">
+                        <button type="button" onClick={() => setFromMinute(incrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
+                        <input ref={fromMinRefCallback} type="text" value={fromMinute} onChange={(e) => handleMinuteChange(e.target.value, setFromMinute)} onBlur={() => handleMinuteBlur(fromMinute, setFromMinute, "00")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                        <button type="button" onClick={() => setFromMinute(decrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                      </div>
+                      <button type="button" onClick={() => setFromAmpm(fromAmpm === "AM" ? "PM" : "AM")} className="ml-auto px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black uppercase rounded-lg transition-colors cursor-pointer">
                         {fromAmpm}
                       </button>
                     </div>
                   </div>
 
-                  {/* TO TIME */}
                   <div className="space-y-1.5">
-                    <span className="text-[10px] uppercase font-bold text-slate-550 block">To Time</span>
-                    <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200">
-                      {/* Hour */}
+                    <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">To Time</label>
+                    <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200/60 shadow-3xs">
                       <div className="flex flex-col items-center">
-                        <button 
-                          type="button" 
-                          onClick={() => setToHour(incrementHourFunc)}
-                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
-                          title="Increase hours"
-                        >▲</button>
-                        <input 
-                          ref={toHourRefCallback}
-                          type="text" 
-                          value={toHour} 
-                          onChange={(e) => handleHourChange(e.target.value, setToHour)}
-                          onBlur={() => handleHourBlur(toHour, setToHour, "05")}
-                          className="w-8 text-center text-xs font-black text-slate-855 focus:outline-none cursor-ns-resize"
-                          title="Type hour, or scroll up/down"
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => setToHour(decrementHourFunc)}
-                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
-                          title="Decrease hours"
-                        >▼</button>
+                        <button type="button" onClick={() => setToHour(incrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
+                        <input ref={toHourRefCallback} type="text" value={toHour} onChange={(e) => handleHourChange(e.target.value, setToHour)} onBlur={() => handleHourBlur(toHour, setToHour, "05")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                        <button type="button" onClick={() => setToHour(decrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
                       </div>
-                      
-                      <span className="text-slate-400 font-bold">:</span>
-                      
-                      {/* Minute */}
+                      <span className="text-slate-300 font-black text-sm">:</span>
                       <div className="flex flex-col items-center">
-                        <button 
-                          type="button" 
-                          onClick={() => setToMinute(incrementMinuteFunc)}
-                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
-                          title="Increase minutes"
-                        >▲</button>
-                        <input 
-                          ref={toMinRefCallback}
-                          type="text" 
-                          value={toMinute} 
-                          onChange={(e) => handleMinuteChange(e.target.value, setToMinute)}
-                          onBlur={() => handleMinuteBlur(toMinute, setToMinute, "00")}
-                          className="w-8 text-center text-xs font-black text-slate-855 focus:outline-none cursor-ns-resize"
-                          title="Type minute, or scroll up/down"
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => setToMinute(decrementMinuteFunc)}
-                          className="text-slate-455 hover:text-slate-700 p-0.5 cursor-pointer text-xs"
-                          title="Decrease minutes"
-                        >▼</button>
+                        <button type="button" onClick={() => setToMinute(incrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
+                        <input ref={toMinRefCallback} type="text" value={toMinute} onChange={(e) => handleMinuteChange(e.target.value, setToMinute)} onBlur={() => handleMinuteBlur(toMinute, setToMinute, "00")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                        <button type="button" onClick={() => setToMinute(decrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
                       </div>
-
-                      {/* AM/PM Toggle */}
-                      <button
-                        type="button"
-                        onClick={() => setToAmpm(toAmpm === "AM" ? "PM" : "AM")}
-                        className="ml-auto px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-750 text-[10px] font-black uppercase rounded-lg border border-slate-200 cursor-pointer"
-                        title="Toggle AM/PM"
-                      >
+                      <button type="button" onClick={() => setToAmpm(toAmpm === "AM" ? "PM" : "AM")} className="ml-auto px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black uppercase rounded-lg transition-colors cursor-pointer">
                         {toAmpm}
                       </button>
                     </div>
                   </div>
                 </div>
-                
-                <p className="text-[9px] text-slate-400 select-none text-center font-medium mt-1">
-                  💡 Tip: Scroll your mouse wheel over the hours or minutes inputs to adjust them, click ▲/▼, or type directly.
-                </p>
+
+                {/* Day Segmented Control */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Working Days</label>
+                  <div className="flex items-center p-1.5 bg-slate-200/50 rounded-2xl border border-slate-200/30 gap-1 overflow-x-auto">
+                    {weekDays.map((day) => {
+                      const isActive = editDays.includes(day);
+                      return (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => {
+                            if (isActive) {
+                              setEditDays(editDays.filter(d => d !== day));
+                            } else {
+                              setEditDays([...editDays, day]);
+                            }
+                          }}
+                          className="relative flex-1 min-w-[40px] flex justify-center items-center py-2.5 rounded-xl cursor-pointer transition-colors z-0 focus:outline-none"
+                        >
+                          {isActive && (
+                            <motion.div 
+                              layoutId="active-day-edit"
+                              className="absolute inset-0 bg-white rounded-xl shadow-sm z-[-1]"
+                              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                          )}
+                          <span className={`text-[11px] font-bold z-10 transition-colors ${isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>
+                            {day.substring(0, 3)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500">Overrule Passphrase Code</label>
+              {/* Security Card */}
+              <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-5 space-y-4 shadow-inner">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
+                  <Lock size={14} /> Security
+                </h4>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Overrule Passphrase Code</label>
                   <input
                     type="text"
                     required
                     value={editPassword}
                     onChange={(e) => setEditPassword(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-stone-700 font-mono"
+                    className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-mono font-semibold focus:ring-4 focus:ring-rose-500/10 focus:border-rose-400 transition-all outline-none shadow-3xs"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-500 block">System Authority Clearance</label>
-                  {editingUser.id === "usr-1" ? (
-                    <div className="space-y-2">
-                      <div className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-500 font-bold select-none cursor-not-allowed">
-                        Owner / System Administrator (Authority Locked)
-                      </div>
-                      
-                      <div className="mt-2 pt-1 border-t border-slate-100">
-                        <label className="text-[9.5px] uppercase font-bold text-slate-400 block mb-1">Secondary Job / Role</label>
-                        <select
-                          value={editRole2}
-                          onChange={(e) => setEditRole2(e.target.value as "none" | UserRole)}
-                          className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-semibold"
-                        >
-                          <option value="none">No Secondary Role</option>
-                          <option value="clinician">Dentist Practitioner</option>
-                          <option value="doctor">Medical Doctor</option>
-                          <option value="frontdesk">Front Desk Clerk</option>
-                          <option value="receptionist">Receptionist Officer</option>
-                          <option value="accountant">Financial Accountant</option>
-                        </select>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <label className="text-[9.5px] uppercase font-bold text-slate-400 block mb-1">Primary Job / Role</label>
-                      <select
-                        value={editRole}
-                        onChange={(e) => setEditRole(e.target.value as UserRole)}
-                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-semibold"
-                      >
-                        <option value="clinician">Dentist Practitioner</option>
-                        <option value="doctor">Medical Doctor</option>
-                        <option value="frontdesk">Front Desk Clerk</option>
-                        <option value="receptionist">Receptionist Officer</option>
-                        <option value="accountant">Financial Accountant</option>
-                        <option value="admin">System Administrator Override</option>
-                      </select>
-                      
-                      <div className="mt-2 pt-1 border-t border-slate-100">
-                        <label className="text-[9.5px] uppercase font-bold text-slate-400 block mb-1">Secondary Job / Role (Optional)</label>
-                        <select
-                          value={editRole2}
-                          onChange={(e) => setEditRole2(e.target.value as "none" | UserRole)}
-                          className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-semibold"
-                        >
-                          <option value="none">No Secondary Role</option>
-                          <option value="clinician">Dentist Practitioner</option>
-                          <option value="doctor">Medical Doctor</option>
-                          <option value="frontdesk">Front Desk Clerk</option>
-                          <option value="receptionist">Receptionist Officer</option>
-                          <option value="accountant">Financial Accountant</option>
-                          <option value="admin">System Administrator Override</option>
-                        </select>
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
-
-              {/* Profile Picture Option: URL or File Upload */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] uppercase font-black text-slate-500 tracking-wider">Profile Picture</label>
-                  
-                  {/* Selectors for Upload vs Link */}
-                  <div className="flex bg-slate-200/60 p-0.5 rounded-lg text-[9px] font-bold select-none">
-                    <button
-                      type="button"
-                      onClick={() => setAvatarInputMode("link")}
-                      className={`px-2 py-1 rounded-md transition-all cursor-pointer ${
-                        avatarInputMode === "link" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
-                      }`}
-                    >
-                      Image Link
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAvatarInputMode("file")}
-                      className={`px-2 py-1 rounded-md transition-all cursor-pointer ${
-                        avatarInputMode === "file" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
-                      }`}
-                    >
-                      Upload PC
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {/* Preview avatar */}
-                  <div className="relative shrink-0 w-12 h-12 rounded-xl bg-slate-200 overflow-hidden border border-slate-300/40 shadow-xs flex items-center justify-center">
-                    {editAvatarUrl ? (
-                      <img
-                        src={editAvatarUrl}
-                        alt="Avatar Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100 font-extrabold text-[9px] uppercase">
-                        None
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    {avatarInputMode === "link" ? (
-                      <input
-                        type="text"
-                        placeholder="https://example.com/avatar.jpg"
-                        value={editAvatarUrl}
-                        onChange={(e) => setEditAvatarUrl(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-650 font-mono focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                      />
-                    ) : (
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          id="edit-avatar-upload"
-                          className="hidden"
-                          onChange={handleFileChange}
-                        />
-                        <label
-                          htmlFor="edit-avatar-upload"
-                          className="w-full p-2.5 rounded-xl border border-dashed border-slate-300 bg-white text-slate-600 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-all text-center select-none"
-                        >
-                          <Plus size={14} className="text-slate-500" />
-                          <span>Choose image...</span>
-                        </label>
-                      </div>
-                    )}
-                  </div>
-
-                  {editAvatarUrl && (
-                    <button
-                      type="button"
-                      onClick={() => setEditAvatarUrl("")}
-                      className="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-3xs"
-                      title="Clear picture"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-slate-500">Physical Room Assignment</label>
-                <select
-                  value={editRoom}
-                  onChange={(e) => setEditRoom(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold cursor-pointer"
-                >
-                  <option value="">No room assigned</option>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
-                    <option key={num} value={`Room ${num}`}>Room {num}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Roster days multi selectors */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] uppercase font-bold text-slate-500 block">Roster Days weekly</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {weekDays.map(day => {
-                    const picked = editDays.includes(day);
-                    return (
-                      <button
-                        key={day}
-                        type="button"
-                        onClick={() => {
-                          if (picked) {
-                            setEditDays(editDays.filter(d => d !== day));
-                          } else {
-                            setEditDays([...editDays, day]);
-                          }
-                        }}
-                        className={`px-2 py-1 rounded text-[9px] uppercase font-bold border transition-all cursor-pointer ${
-                          picked 
-                            ? "bg-blue-600 text-white border-blue-600" 
-                            : "bg-slate-50 text-slate-550 border-slate-200 hover:bg-slate-100"
-                        }`}
-                      >
-                        {day.substring(0, 3)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex gap-2.5 pt-4 border-t border-slate-100 shrink-0">
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer shadow-sm border border-blue-700/10 active:scale-95 transition-all"
-                >
-                  Save File Modifications
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditingUser(null)}
-                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200/50 cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
+              
             </form>
-          </div>
-        </div>
+
+            {/* Modal Footer */}
+            <div className="pt-6 mt-2 border-t border-slate-100/60 flex items-center justify-end gap-3 shrink-0">
+              <button 
+                type="button" 
+                onClick={() => setEditingUser(null)}
+                className="px-6 h-12 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-[13px] transition-all cursor-pointer active:scale-95"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                form="edit-staff-form"
+                className="flex-1 sm:flex-none sm:px-8 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-[13px] transition-all cursor-pointer shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.3)] active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Check size={16} />
+                Save Modifications
+              </button>
+            </div>
+            
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* CONFIRM SYSTEM HARD RESET DIALOG */}
       {showEmergencyModal && (
