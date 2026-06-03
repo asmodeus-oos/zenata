@@ -40,6 +40,7 @@ import {
   Tooltip, 
   CartesianGrid 
 } from "recharts";
+import { PremiumSelect } from "./ui/PremiumSelect";
 
 export interface FinanceProps {
   onSwitchTab?: (tab: string) => void;
@@ -1665,12 +1666,6 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
 
           </div>
         </div>
-      )}
-
-    </div>
-  );
-}
-   </div>
       )}
 
     </div>

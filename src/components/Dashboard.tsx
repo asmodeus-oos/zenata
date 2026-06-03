@@ -33,6 +33,7 @@ import {
   Bar,
   Legend
 } from "recharts";
+import { PremiumSelect } from "./ui/PremiumSelect";
 
 interface DashboardProps {
   onSwitchTab: (tab: string) => void;
@@ -703,11 +704,6 @@ export default function Dashboard({ onSwitchTab, onSelectPatient }: DashboardPro
             Procedure logs are populated live upon operational completion.
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-</div>
       </div>
     </div>
   );
