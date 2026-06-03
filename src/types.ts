@@ -15,6 +15,8 @@ export interface User {
   assignedRoom?: string;
   days?: string[];
   hours?: string;
+  gender?: "Male" | "Female";
+  doctorId?: string;
 }
 
 export type FillingType = "Composite" | "Amalgam" | "GIC";
