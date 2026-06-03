@@ -267,30 +267,44 @@ export const useStore = create<ClinicalState>()(
 
         // Parallel Real-time Synchronization
         collections.forEach(col => {
-          const unsub = onSnapshot(collection(db, col), { includeMetadataChanges: true }, (snapshot) => {
-            if (snapshot.empty && seeds[col].length > 0) {
-              seeds[col].forEach(item => setDoc(doc(db, col, item.id), item).catch(() => {}));
-            } else {
-              const list: any[] = [];
-              snapshot.forEach(doc => list.push(doc.data()));
-              set({ [col]: list } as any);
+          const unsub = onSnapshot(collection(db, col), { includeMetadataChanges: true }, 
+            (snapshot) => {
+              if (snapshot.empty && seeds[col].length > 0) {
+                seeds[col].forEach(item => setDoc(doc(db, col, item.id), item).catch(() => {}));
+              } else {
+                const list: any[] = [];
+                snapshot.forEach(doc => list.push(doc.data()));
+                set({ [col]: list } as any);
+              }
+              // Resolve readiness promise when the critical 'users' collection is initialized
+              if (col === "users") {
+                if (resolveFirestoreReady) resolveFirestoreReady();
+              }
+            },
+            (error) => {
+              console.error(`Firestore permission denied on ${col}. Are rules deployed?`, error);
+              // UNBLOCK UI EVEN IF DATABASE REJECTS US
+              if (col === "users") {
+                if (resolveFirestoreReady) resolveFirestoreReady(); 
+              }
             }
-            // Resolve readiness promise when the critical 'users' collection is initialized
-            if (col === "users") {
-              if (resolveFirestoreReady) resolveFirestoreReady();
-            }
-          });
+          );
           unsubscribes.push(unsub);
         });
 
         // Clinic Settings Sync
-        const unsubSettings = onSnapshot(doc(db, "clinicSettings", "global"), (snapshot) => {
-          if (!snapshot.exists()) {
-            setDoc(doc(db, "clinicSettings", "global"), initialSettings).catch(() => {});
-          } else {
-            set({ clinicSettings: snapshot.data() as ClinicSettings });
+        const unsubSettings = onSnapshot(doc(db, "clinicSettings", "global"), 
+          (snapshot) => {
+            if (!snapshot.exists()) {
+              setDoc(doc(db, "clinicSettings", "global"), initialSettings).catch(() => {});
+            } else {
+              set({ clinicSettings: snapshot.data() as ClinicSettings });
+            }
+          },
+          (error) => {
+            console.error("Clinic settings permission denied.", error);
           }
-        });
+        );
         unsubscribes.push(unsubSettings);
 
         (window as any).__firestoreUnsubs = unsubscribes;
