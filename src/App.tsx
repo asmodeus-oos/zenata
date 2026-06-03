@@ -12,8 +12,9 @@ import Settings from "./components/Settings";
 import Performance from "./components/Performance";
 import { PremiumSelect } from "./components/ui/PremiumSelect";
 import { UserRole } from "./types";
-import { auth } from "./firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { auth, functions } from "./firebase";
+import { onAuthStateChanged, signInAnonymously } from "firebase/auth";
+import { httpsCallable } from "firebase/functions";
 import { 
   Stethoscope, 
   ShieldCheck, 
@@ -129,6 +130,7 @@ export default function App() {
   const [forgotKeyInput, setForgotKeyInput] = useState("");
   const [forgotError, setForgotError] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Live clock
   const [currentTime, setCurrentTime] = React.useState(new Date());
@@ -136,8 +138,6 @@ export default function App() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const MASTER_KEY = "UQBPQl-j7IW5K3yYm7vu3WWANjyDd8Q2sUQvlxMAlcgxUbkb";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,20 +189,28 @@ export default function App() {
 
             {/* Password recovery flow with Emergency Master Key to retrieve owner's credentials */}
             {showForgot ? (
-              <form onSubmit={(e) => {
+              <form onSubmit={async (e) => {
                 e.preventDefault();
-                if (forgotKeyInput === MASTER_KEY) {
+                setIsVerifying(true);
+                setForgotError(false);
+                try {
+                  if (!auth.currentUser) {
+                    await signInAnonymously(auth);
+                  }
+                  const verifyMasterKey = httpsCallable(functions, 'verifyMasterKey');
+                  await verifyMasterKey({ providedKey: forgotKeyInput });
                   setForgotSuccess(true);
-                  setForgotError(false);
-                } else {
+                } catch (error) {
                   setForgotError(true);
                   setForgotSuccess(false);
+                } finally {
+                  setIsVerifying(false);
                 }
               }} className="space-y-4">
                 <div className="space-y-1.5 text-center">
-                  <KeyRound className={`mx-auto animate-pulse ${forgotSuccess ? 'text-emerald-500' : 'text-amber-500'}`} size={32} />
+                  <KeyRound className={`mx-auto ${isVerifying ? 'animate-bounce text-blue-500' : forgotSuccess ? 'text-emerald-500' : 'text-amber-500 animate-pulse'}`} size={32} />
                   <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">
-                    {forgotSuccess ? 'Owner Account Access Granted' : 'Security Clearance Authorization'}
+                    {isVerifying ? 'Verifying with Secure Server...' : forgotSuccess ? 'Owner Account Access Granted' : 'Security Clearance Authorization'}
                   </h3>
                   <p className="text-[10px] text-slate-500 leading-normal">
                     {forgotSuccess 
@@ -234,7 +242,8 @@ export default function App() {
                       type="password"
                       value={forgotKeyInput}
                       onChange={(e) => setForgotKeyInput(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-200 bg-white text-[11px] font-mono tracking-wide text-amber-800 transition-all font-semibold focus:outline-none focus:ring-2 focus:ring-blue-150"
+                      disabled={isVerifying}
+                      className="w-full p-3 rounded-xl border border-slate-200 bg-white text-[11px] font-mono tracking-wide text-amber-800 transition-all font-semibold focus:outline-none focus:ring-2 focus:ring-blue-150 disabled:opacity-50"
                       placeholder="Enter master bypass key..."
                     />
                   </div>
@@ -255,16 +264,18 @@ export default function App() {
                       setForgotKeyInput("");
                       setForgotSuccess(false);
                     }}
-                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer"
+                    disabled={isVerifying}
+                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 text-xs font-bold rounded-xl cursor-pointer"
                   >
                     Back to Normal Login
                   </button>
                   {!forgotSuccess && (
                     <button
                       type="submit"
-                      className="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl cursor-pointer"
+                      disabled={isVerifying || !forgotKeyInput}
+                      className="flex-1 py-3 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl cursor-pointer"
                     >
-                      Verify Master Key
+                      {isVerifying ? 'Verifying...' : 'Verify Master Key'}
                     </button>
                   )}
                 </div>
