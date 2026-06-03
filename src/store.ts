@@ -160,17 +160,12 @@ const initialAppointments: Appointment[] = [];
 const initialFinancials: FinancialRecord[] = [];
 
 // Event-driven readiness system for Firestore
-let firestoreReadyPromise: Promise<void> | null = null;
-let resolveFirestoreReady: (() => void) | null = null;
+let resolveFirestoreReady: () => void;
+let firestoreReadyPromise = new Promise<void>((resolve) => {
+  resolveFirestoreReady = resolve;
+});
 
-const getFirestoreReady = () => {
-  if (!firestoreReadyPromise) {
-    firestoreReadyPromise = new Promise((resolve) => {
-      resolveFirestoreReady = resolve;
-    });
-  }
-  return firestoreReadyPromise;
-};
+const getFirestoreReady = () => firestoreReadyPromise;
 
 const syncDoc = async (collectionName: string, id: string, data: any, op: OperationType) => {
   if (!useStore.getState().isSyncActive) return;
