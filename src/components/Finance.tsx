@@ -1239,7 +1239,7 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
               {extraCostScope === "Doctor" && (
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">Assign to Doctor</span>
-                  <select
+                  <PremiumSelect
                     value={extraSelectedDoctorId}
                     onChange={(e) => setExtraSelectedDoctorId(e.target.value)}
                     className="w-full text-[10px] p-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold bg-white cursor-pointer"
@@ -1247,7 +1247,7 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
                     {availableDoctors.map(u => (
                       <option key={u.id} value={u.id}>{u.name} ({u.specialty})</option>
                     ))}
-                  </select>
+                  </PremiumSelect>
                 </div>
               )}
 
@@ -1665,6 +1665,12 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
 
           </div>
         </div>
+      )}
+
+    </div>
+  );
+}
+   </div>
       )}
 
     </div>
