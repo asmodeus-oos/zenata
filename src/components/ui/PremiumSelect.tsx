@@ -24,10 +24,11 @@ export function PremiumSelect({ id, value, onChange, className, children, disabl
   const childArray = React.Children.toArray(children);
   childArray.forEach(child => {
     if (!React.isValidElement(child)) return;
-    if (child.type === 'option') {
+    const element = child as React.ReactElement<any>;
+    if (element.type === 'option') {
       options.push({
-        value: child.props.value || "",
-        label: child.props.children as string
+        value: element.props.value || "",
+        label: element.props.children as string
       });
     }
   });
