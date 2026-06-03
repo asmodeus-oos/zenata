@@ -614,11 +614,11 @@ export default function Staff() {
 
   // Pre-designed top-quality physician profile pictures available for wizard selection
   const avatarPresets = [
-    { name: "Dr. Clara Mendes (Cosmetic)", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTps0OO8oAWRbrzOtvHKdziTYj5UqTM7fKITg&s" },
-    { name: "Dr. Omnia Hossam (Owner)", url: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80" },
-    { name: "Dr. Robert Pires (Prosthetics)", url: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=150&q=80" },
-    { name: "Sarah Connor Clerk Style", url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80" },
-    { name: "Dr. Bruce Wayne (Orthodontics)", url: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=150&q=80" }
+    { name: "Clinical Specialist 1", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTps0OO8oAWRbrzOtvHKdziTYj5UqTM7fKITg&s" },
+    { name: `${currentUser?.name || "Practice Owner"} (Owner)`, url: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80" },
+    { name: "Clinical Specialist 2", url: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=150&q=80" },
+    { name: "Administrative Staff", url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80" },
+    { name: "Clinical Specialist 3", url: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=150&q=80" }
   ];
 
   // Working schedule days options
@@ -1567,7 +1567,7 @@ export default function Staff() {
                     <input
                       type="text"
                       required
-                      placeholder="E.g., Dr. Bruce Wayne"
+                      placeholder="E.g., Dr. Full Name"
                       value={wizName}
                       onChange={(e) => setWizName(e.target.value)}
                       className="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-150 transition-all font-semibold"
@@ -2216,7 +2216,7 @@ export default function Staff() {
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-sm tracking-tight">Database Baseline Safe-Purge</h3>
                   <p className="text-xs text-rose-800 mt-1 sm:mt-1.5 leading-relaxed font-semibold">
-                    Irreversibly restore current offline browser databases back to initial seed data (Arthur, Tommy, Benjamin, Vance) and restore default duty schedules.
+                    Irreversibly restore current offline browser databases back to a clean baseline and restore default duty schedules.
                   </p>
                   <p className="text-[10px] text-rose-700 mt-1.5 font-bold italic leading-normal">
                     * Warning: All registered clinician rosters, active prosthetic treatment sessions, and bill ledger settlements logged during current shift will be permanently cancelled.

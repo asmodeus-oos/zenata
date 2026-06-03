@@ -102,7 +102,10 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
   const [chiefComplaint, setChiefComplaint] = useState("");
   const [quickNotes, setQuickNotes] = useState("");
   const [patientImageUrl, setPatientImageUrl] = useState("");
-  const [selectedDoctor, setSelectedDoctor] = useState("Dr. Omnia Hossam");
+  const [selectedDoctor, setSelectedDoctor] = useState(() => {
+    const defaultDoc = users.find(u => u.role === "doctor" || u.role === "admin" || u.role === "clinician");
+    return defaultDoc ? defaultDoc.name : "Practitioner";
+  });
 
   // Helper to adjust time segments
   const adjustHour = (delta: number) => {
@@ -1827,7 +1830,8 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                 onClick={() => {
                   updateAppointment(appBeingAdmitted.id, { 
                     status: "Completed",
-                    notes: admitNotes || "Treatment completed directly (bypassed billing and specific log details)."
+                    notes: admitNotes || "Treatment completed directly (bypassed billing and specific log details).",
+                    attendingClinicalOperator: currentUser?.name // Record who actually performed the treatment
                   });
                   setIsAdmittingAppId(null);
                 }}
@@ -1841,12 +1845,16 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
                 type="button"
                 onClick={() => {
                   if (admitCostVal > 0 || admitPaidVal > 0) {
+                    // Find the doctor object by name to get the correct doctorId
+                    const doctorObj = users.find(u => u.name === appBeingAdmitted.doctorName);
+                    
                     addClinicalIncomeRecord(appBeingAdmitted.patientId, {
                       procedureName: admitCostName || `${appBeingAdmitted.procedureType} Treatment`,
                       totalCost: admitCostVal,
                       paidAmount: admitPaidVal,
                       paymentMethod: admitPaymentMethod,
-                      notes: admitNotes
+                      notes: admitNotes,
+                      doctorId: doctorObj?.id // Attribute income to the specific doctor for performance stats
                     });
                   }
                   
@@ -1857,7 +1865,8 @@ export default function Appointments({ onSwitchTab, onSelectPatient }: Appointme
 
                   updateAppointment(appBeingAdmitted.id, { 
                     status: "Completed",
-                    notes: notesText
+                    notes: notesText,
+                    attendingClinicalOperator: currentUser?.name // Record who actually performed the treatment
                   });
                   setIsAdmittingAppId(null);
                 }}

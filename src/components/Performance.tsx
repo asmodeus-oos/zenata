@@ -141,8 +141,32 @@ export default function Performance() {
   // Filter appointments and financial records according to the active timeframe
   const filteredAppointments = useMemo(() => {
     const dates = getFilterDates;
-    return appointments.filter(a => a.date >= dates.start && a.date <= dates.end);
-  }, [appointments, getFilterDates]);
+    const activeAppts = appointments.filter(a => a.date >= dates.start && a.date <= dates.end);
+    
+    // Also include completed sessions from patients
+    const sessionAppts: any[] = [];
+    patients.forEach(p => {
+      if (p.sessions) {
+        p.sessions.forEach(s => {
+          if (s.date >= dates.start && s.date <= dates.end) {
+            sessionAppts.push({
+              id: s.id,
+              patientId: p.id,
+              patientName: p.name,
+              doctorName: s.doctorName,
+              date: s.date,
+              time: s.time,
+              procedureType: s.procedureType,
+              status: "Completed",
+              notes: s.notes
+            });
+          }
+        });
+      }
+    });
+
+    return [...activeAppts, ...sessionAppts];
+  }, [appointments, patients, getFilterDates]);
 
   const filteredFinancials = useMemo(() => {
     const dates = getFilterDates;
@@ -156,13 +180,20 @@ export default function Performance() {
 
   // Identify practice providers (Practitioners, admins, or staff with clinical appointments)
   const doctors = useMemo(() => {
-    // Get unique doctor names from appointments to capture active practitioners
-    const apptDocNames = Array.from(new Set(appointments.map(a => a.doctorName)));
+    // Get unique doctor names from appointments AND historical sessions to capture all active practitioners
+    const apptDocNames = new Set(appointments.map(a => a.doctorName));
+    
+    patients.forEach(p => {
+      if (p.sessions) {
+        p.sessions.forEach(s => apptDocNames.add(s.doctorName));
+      }
+    });
+
     return users.filter(u => 
       u.isActive && 
-      (u.role === "clinician" || u.role === "admin" || apptDocNames.includes(u.name))
+      (u.role === "clinician" || u.role === "admin" || apptDocNames.has(u.name))
     );
-  }, [users, appointments]);
+  }, [users, appointments, patients]);
 
   // If no doctor selected yet, default to the first one available
   const activeDocId = selectedDoctorId || doctors[0]?.id || "";
@@ -207,12 +238,20 @@ export default function Performance() {
     doctors.forEach(doc => {
       map.set(doc.name, []);
     });
+
+    const normalizeName = (n: string) => n.toLowerCase().replace(/^dr\.?\s+/i, "").trim();
+
     filteredAppointments.forEach(appt => {
-      const list = map.get(appt.doctorName);
-      if (list) {
-        list.push(appt);
-      } else {
-        map.set(appt.doctorName, [appt]);
+      const apptDocNameNorm = normalizeName(appt.doctorName);
+      
+      // Find matching doctor by normalized name
+      const matchingDoc = doctors.find(d => normalizeName(d.name) === apptDocNameNorm);
+      
+      if (matchingDoc) {
+        const list = map.get(matchingDoc.name);
+        if (list) {
+          list.push(appt);
+        }
       }
     });
     return map;
@@ -225,15 +264,34 @@ export default function Performance() {
       map.set(doc.name, 0);
     });
 
+    const normalizeName = (n: string) => n.toLowerCase().replace(/^dr\.?\s+/i, "").trim();
+
     filteredFinancials.forEach(rec => {
       if (rec.type === "expense") return;
+      
+      // PRIORITY 1: Use explicit doctorId if stored in the record
+      if (rec.doctorId) {
+        const doc = doctors.find(d => d.id === rec.doctorId);
+        if (doc) {
+          const cur = map.get(doc.name) || 0;
+          map.set(doc.name, cur + rec.paidAmount);
+          return;
+        }
+      }
+
+      // PRIORITY 2: Fallback to appointment-based share (for legacy or patient-level payments)
       const setOfDocs = patientToDocsMap.get(rec.patientId);
       if (setOfDocs && setOfDocs.size > 0) {
         const uniqueDocsCount = setOfDocs.size;
         const share = rec.paidAmount / uniqueDocsCount;
         setOfDocs.forEach(docName => {
-          const cur = map.get(docName) || 0;
-          map.set(docName, cur + share);
+          const docNameNorm = normalizeName(docName);
+          const matchingDoc = doctors.find(d => normalizeName(d.name) === docNameNorm);
+          
+          if (matchingDoc) {
+            const cur = map.get(matchingDoc.name) || 0;
+            map.set(matchingDoc.name, cur + share);
+          }
         });
       }
     });
@@ -246,9 +304,15 @@ export default function Performance() {
     doctors.forEach(doc => {
       map.set(doc.name, []);
     });
+
+    const normalizeName = (n: string) => n.toLowerCase().replace(/^dr\.?\s+/i, "").trim();
+
     filteredSuppliesExpenses.forEach(rec => {
       doctors.forEach(doc => {
-        if (rec.procedureName.includes(`by ${doc.name}`) || (rec.notes && rec.notes.includes(doc.name))) {
+        const docNorm = normalizeName(doc.name);
+        if (rec.procedureName.toLowerCase().includes(`by ${docNorm}`) || 
+            rec.procedureName.toLowerCase().includes(docNorm) ||
+            (rec.notes && rec.notes.toLowerCase().includes(docNorm))) {
           map.get(doc.name)?.push(rec);
         }
       });
@@ -866,7 +930,7 @@ export default function Performance() {
 
                   <div className="divide-y divide-slate-100 overflow-y-auto max-h-[300px] pr-1 space-y-2.5 flex-1 custom-scrollbar">
                     {activeStats.consumptions.map((exp: any, idx: number) => {
-                      // Grab descriptive name of supply from procedureName e.g., "Materials Consumption: 3 Tubes of Composite Resin (A2) (by Dr. Alexander Thorne)"
+                      // Grab descriptive name of supply from procedureName e.g., "Materials Consumption: 3 Tubes of Composite Resin (A2) (by Dr. Practitioner)"
                       const displayName = exp.procedureName
                         .replace("Materials Consumption: ", "")
                         .split(" (by ")[0];

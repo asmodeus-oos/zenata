@@ -98,6 +98,7 @@ interface ClinicalState {
     notes?: string;
     receiptFileName?: string;
     receiptFileContent?: string;
+    doctorId?: string;
   }) => void;
   addPayment: (patientId: string, prostheticId: string, amount: number, paymentMethod: "Cash" | "Card" | "Bank Transfer") => void;
   addPaymentRecord: (item: FinancialRecord) => void; // internal use
@@ -137,35 +138,9 @@ interface ClinicalState {
 }
 
 // Default Seed Data - Clean Production Baseline
-const initialUsers: User[] = [
-  { 
-    id: "usr-1", 
-    name: "Dr. Omnia Hossam", 
-    username: "admin", 
-    role: "admin", 
-    role2: "doctor", 
-    password: "owner123", 
-    isActive: true, 
-    email: "omnia.hossam@zendenta.com", 
-    phone: "+1 (555) 123-4567",
-    avatarUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80",
-    specialty: "Practice Owner & Specialist",
-    assignedRoom: "Room 1",
-    days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    hours: "09:00 AM - 05:00 PM"
-  }
-];
+const initialUsers: User[] = [];
 
-const initialShifts: DoctorShift[] = [
-  { 
-    name: "Dr. Omnia Hossam", 
-    specialty: "Practice Owner & Specialist", 
-    assignedRoom: "Room 1",
-    days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], 
-    hours: "09:00 AM - 05:00 PM", 
-    isAvailable: true 
-  }
-];
+const initialShifts: DoctorShift[] = [];
 
 const initialPatients: Patient[] = [];
 const initialInventory: InventoryItem[] = [];
@@ -497,7 +472,8 @@ export const useStore = create<ClinicalState>()(
           notes: item.notes, 
           type: "income",
           receiptFileName: item.receiptFileName,
-          receiptFileContent: item.receiptFileContent
+          receiptFileContent: item.receiptFileContent,
+          doctorId: item.doctorId
         };
         set(state => ({ financialRecords: [financial, ...state.financialRecords] }));
         syncDoc("financialRecords", financial.id, financial, OperationType.CREATE);
@@ -600,7 +576,7 @@ export const useStore = create<ClinicalState>()(
         set(state => ({ doctorShifts: state.doctorShifts.filter(s => names.has(s.name.toLowerCase())) }));
       },
 
-      emergencyReset: () => set({ currentUser: initialUsers[0], users: initialUsers, patients: initialPatients, appointments: initialAppointments, financialRecords: initialFinancials, doctorShifts: initialShifts, inventory: initialInventory, activityLogs: initialLogs, clinicSettings: initialSettings })
+      emergencyReset: () => set({ currentUser: null, users: initialUsers, patients: initialPatients, appointments: initialAppointments, financialRecords: initialFinancials, doctorShifts: initialShifts, inventory: initialInventory, activityLogs: initialLogs, clinicSettings: initialSettings })
     }),
     {
       name: "zendenta-erp-storage-v4",

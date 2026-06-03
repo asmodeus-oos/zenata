@@ -125,7 +125,7 @@ export default function Sidebar({
               </div>
               <div className="overflow-hidden min-w-0 flex-1">
                 <h4 className="font-semibold text-slate-800 text-xs truncate" title={currentUser?.name}>
-                  {currentUser?.name || "Dr. Thorne"}
+                  {currentUser?.name || "Unknown Practitioner"}
                 </h4>
                 <p className="text-[10px] text-slate-500 capitalize truncate">
                   {currentUser?.role || "administrator"}

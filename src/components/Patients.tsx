@@ -406,7 +406,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
       glidePath: "K-File #15",
       irrigationProtocol: { sodiumHypo: "5.25% NaOCl", edta: true, chlorhexidine: true, activation: "Sonic activation" },
       intracanalMedication: { material: "Calcium Hydroxide", placedDate: new Date().toISOString().split('T')[0], removalDate: "" },
-      obturationDetails: { technique: "Warm Vertical", sealerType: "Bioceramic Sealer", coneSize: "#25/.04", date: "", operator: "Dr. Alexander Thorne" },
+      obturationDetails: { technique: "Warm Vertical", sealerType: "Bioceramic Sealer", coneSize: "#25/.04", date: "", operator: currentUser?.name || "Practitioner" },
       followUpNotes: "Awaiting final composite post core reconstruction.",
       caseStatus: "Medication Phase"
     };
@@ -704,7 +704,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
       doc.text(`Clinical Dossier Summary: ${activePatient.name} (ID: ${activePatient.id})`, 15, 18);
 
       doc.text(`Generated: ${new Date().toISOString().replace('T', ' ').slice(0, 19)} UTC`, 195, 14, { align: "right" });
-      doc.text(`Operator: mimix4ymu@gmail.com`, 195, 18, { align: "right" });
+      doc.text(`Operator: ${currentUser?.email || "Unknown"}`, 195, 18, { align: "right" });
 
       // Divider
       doc.setDrawColor(226, 232, 240);
@@ -2081,8 +2081,9 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                               obturationDetails: { ...activeCase.obturationDetails, operator: e.target.value }
                             })}
                             className="w-full bg-white border border-slate-200 p-2.5 rounded-xl font-medium"
-                            placeholder="Dr. Clara Mendes"
-                          />
+                            placeholder="Dr. Practitioner"
+                            />
+
                         </div>
                         <div className="space-y-1">
                           <label className="text-[8px] font-bold text-slate-400 uppercase block">Follow-up recalled notes</label>

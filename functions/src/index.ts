@@ -1,6 +1,13 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 
+// Fix for 'write EIO' error in environments where stdout might be closed
+if (typeof process !== 'undefined' && process.stdout) {
+  process.stdout.on('error', (err: any) => {
+    if (err.code === 'EIO') return;
+  });
+}
+
 admin.initializeApp();
 const db = admin.firestore();
 

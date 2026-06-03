@@ -73,7 +73,7 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const email = firebaseUser.email || "";
-        const name = firebaseUser.displayName || "Dr. Guest";
+        const name = firebaseUser.displayName || email.split("@")[0] || "Practitioner";
         let found = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
         
         if (!found) {
@@ -114,26 +114,6 @@ export default function App() {
     document.documentElement.classList.remove("dark");
     // Prune orphaned shifts on boot
     useStore.getState().syncShiftsWithStaff();
-
-    // One-time self-healing data migration on boot to sync existing appointments with reservation fees into financialRecords.
-    const checkMigration = () => {
-      const state = useStore.getState();
-      const { patients, financialRecords, addClinicalIncomeRecord } = state;
-      const gggPatient = patients.find(p => p.name.toLowerCase().includes("ggg"));
-      if (gggPatient) {
-        const hasReservationRecord = financialRecords.some(r => r.patientId === gggPatient.id && r.procedureName.includes("Reservation"));
-        if (!hasReservationRecord) {
-          addClinicalIncomeRecord(gggPatient.id, {
-            procedureName: "Reservation: Consultation",
-            totalCost: 500,
-            paidAmount: 400,
-            paymentMethod: "Cash",
-            notes: "Migrated Booking reservation fee (costs $500, paid $400, owe $100)"
-          });
-        }
-      }
-    };
-    setTimeout(checkMigration, 800);
   }, []);
 
   // Portal login panel states

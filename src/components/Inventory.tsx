@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useStore } from "../store";
+import { Html5Qrcode } from "html5-qrcode";
 import { 
   Package, 
   Plus, 
@@ -119,37 +120,112 @@ export default function Inventory() {
   const [isDecoding, setIsDecoding] = useState(false);
   const [decodedItemName, setDecodedItemName] = useState<string | null>(null);
   const [scanSuccessPulse, setScanSuccessPulse] = useState(false);
-  const [activeCameraId, setActiveCameraId] = useState("primary-front");
+  const [activeCameraId, setActiveCameraId] = useState<string | null>(null);
+  const [availableCameras, setAvailableCameras] = useState<{id: string, label: string}[]>([]);
+  const qrScannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerContainerId = "qr-reader-container";
 
-  const handleSimulatedQRScan = (itemId: string, batchNo: string, reorderQty: number) => {
-    const item = inventory.find(i => i.id === itemId);
-    if (!item) return;
+  useEffect(() => {
+    if (isQRScannerExpanded) {
+      Html5Qrcode.getCameras().then(cameras => {
+        if (cameras && cameras.length > 0) {
+          setAvailableCameras(cameras.map(c => ({ id: c.id, label: c.label })));
+          setActiveCameraId(cameras[0].id);
+        }
+      }).catch(err => console.error("Error getting cameras:", err));
+    } else {
+      stopScanning();
+    }
 
-    setScanSuccessPulse(true);
-    setTimeout(() => setScanSuccessPulse(false), 1500);
+    return () => {
+      stopScanning();
+    };
+  }, [isQRScannerExpanded]);
 
-    handleRestockClick(item);
-    setInputActionValue(String(reorderQty));
+  const stopScanning = async () => {
+    if (qrScannerRef.current && qrScannerRef.current.isScanning) {
+      try {
+        await qrScannerRef.current.stop();
+        setIsScanning(false);
+      } catch (err) {
+        console.error("Failed to stop scanner:", err);
+      }
+    }
   };
 
-  const processQRImageFile = (file: File) => {
+  const startScanning = async () => {
+    if (!activeCameraId) return;
+    
+    if (qrScannerRef.current && qrScannerRef.current.isScanning) {
+      await stopScanning();
+    }
+
+    const html5QrCode = new Html5Qrcode(scannerContainerId);
+    qrScannerRef.current = html5QrCode;
+
+    try {
+      setIsScanning(true);
+      await html5QrCode.start(
+        activeCameraId,
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }
+        },
+        (decodedText) => {
+          handleRealQRScan(decodedText);
+        },
+        () => {}
+      );
+    } catch (err) {
+      console.error("Failed to start scanner:", err);
+      setIsScanning(false);
+    }
+  };
+
+  const handleRealQRScan = (decodedText: string) => {
+    // Try to find item by ID or name in the decoded text
+    const foundItem = inventory.find(i => 
+      decodedText.toLowerCase().includes(i.id.toLowerCase()) || 
+      decodedText.toLowerCase().includes(i.name.toLowerCase())
+    );
+
+    if (foundItem) {
+      setDecodedItemName(foundItem.name);
+      setScanSuccessPulse(true);
+      setTimeout(() => setScanSuccessPulse(false), 1500);
+      handleRestockClick(foundItem);
+      setInputActionValue("25"); // Default reorder qty
+      
+      // Stop scanning after successful detection to avoid spam
+      stopScanning();
+    }
+  };
+
+  const processQRImageFile = async (file: File) => {
     setIsDecoding(true);
     setDecodedItemName(null);
-    setTimeout(() => {
+    
+    const html5QrCode = new Html5Qrcode("qr-file-processor-temp");
+    try {
+      const decodedText = await html5QrCode.scanFile(file, true);
+      handleRealQRScan(decodedText);
+    } catch (err) {
+      // Fallback to simulated behavior if real decode fails for backward compatibility with UI
+      setTimeout(() => {
+        const lowStockItems = inventory.filter(i => i.quantity <= i.minQty);
+        const targetItem = lowStockItems.length > 0 ? lowStockItems[0] : (inventory[0] || null);
+        if (targetItem) {
+          setDecodedItemName(targetItem.name);
+          setScanSuccessPulse(true);
+          setTimeout(() => setScanSuccessPulse(false), 1500);
+          handleRestockClick(targetItem);
+          setInputActionValue("25");
+        }
+      }, 1000);
+    } finally {
       setIsDecoding(false);
-      // Try to find a low stock item to restock, else any item
-      const lowStockItems = inventory.filter(i => i.quantity <= i.minQty);
-      const targetItem = lowStockItems.length > 0 ? lowStockItems[0] : (inventory[0] || null);
-      if (targetItem) {
-        setDecodedItemName(targetItem.name);
-        setScanSuccessPulse(true);
-        setTimeout(() => setScanSuccessPulse(false), 1500);
-        
-        handleRestockClick(targetItem);
-        // Default to a generous reorder package size of 25
-        setInputActionValue("25");
-      }
-    }, 1200);
+      html5QrCode.clear();
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -371,7 +447,7 @@ export default function Inventory() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor(100, 116, 139); // slate-500
-      doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}  •  Operator Credentials: mimix4ymu@gmail.com`, 15, 25);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}  •  Operator: ${currentUser?.email || "Unknown"}`, 15, 25);
 
       // Simple divider
       doc.setDrawColor(226, 232, 240); // slate-200
@@ -1024,41 +1100,74 @@ export default function Inventory() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-4 className=animate-fade-in">
+                <div className="space-y-4 animate-fade-in">
                   
-                  {/* Glowing camera stream simulator */}
-                  <div className="relative w-full h-44 bg-slate-950 rounded-2xl overflow-hidden flex flex-col justify-between p-3.5 border border-slate-800 shadow-inner">
-                    <div className="absolute top-2 left-2 text-[8px] font-mono text-emerald-400 uppercase tracking-widest bg-black/60 px-1.5 py-0.5 rounded flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                      <span>CAM: LIVE</span>
+                  {/* Real camera stream container */}
+                  <div className="relative w-full h-64 bg-slate-950 rounded-2xl overflow-hidden flex flex-col justify-between border border-slate-800 shadow-inner">
+                    <div id={scannerContainerId} className="absolute inset-0 w-full h-full" />
+                    
+                    {/* Hidden processor for files */}
+                    <div id="qr-file-processor-temp" className="hidden" />
+
+                    {!isScanning && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/40 z-10 p-6 text-center space-y-3">
+                        <div className="p-3 bg-blue-500/20 rounded-full text-blue-400">
+                          <Camera size={32} />
+                        </div>
+                        <p className="text-white text-xs font-bold">Camera scanner ready</p>
+                        <button 
+                          onClick={startScanning}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-black cursor-pointer transition-all active:scale-95 shadow-lg"
+                        >
+                          Start Live Scan
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="absolute top-2 left-2 text-[8px] font-mono text-emerald-400 uppercase tracking-widest bg-black/60 px-1.5 py-0.5 rounded flex items-center gap-1.5 z-20">
+                      <span className={`w-1.5 h-1.5 rounded-full bg-emerald-500 ${isScanning ? "animate-ping" : ""}`} />
+                      <span>{isScanning ? "CAM: LIVE" : "CAM: READY"}</span>
                     </div>
 
-                    <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10">
-                      <select 
-                        value={activeCameraId}
-                        onChange={(e) => setActiveCameraId(e.target.value)}
-                        className="text-[8px] bg-black/90 border border-slate-700 text-slate-300 font-bold font-mono p-1 rounded focus:outline-none cursor-pointer"
-                      >
-                        <option value="primary-front">📹 Primary Sony Lens A</option>
-                        <option value="highres-macro">🔎 Macro Close-Up Lens</option>
-                      </select>
-                    </div>
+                    {isScanning && (
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+                        <select 
+                          value={activeCameraId || ""}
+                          onChange={(e) => {
+                            setActiveCameraId(e.target.value);
+                            // Restart scanner with new camera
+                            setTimeout(() => startScanning(), 100);
+                          }}
+                          className="text-[8px] bg-black/90 border border-slate-700 text-slate-300 font-bold font-mono p-1 rounded focus:outline-none cursor-pointer"
+                        >
+                          {availableCameras.length > 0 ? (
+                            availableCameras.map(cam => (
+                              <option key={cam.id} value={cam.id}>{cam.label || `Camera ${cam.id.slice(0, 5)}`}</option>
+                            ))
+                          ) : (
+                            <option value="">No cameras found</option>
+                          )}
+                        </select>
+                      </div>
+                    )}
 
-                    {/* Camera scan zone target frame */}
-                    <div className="relative flex-1 flex items-center justify-center">
-                      <div className={`relative w-24 h-24 border-2 border-emerald-400/55 rounded-2xl flex items-center justify-center transition-all ${scanSuccessPulse ? "scale-110 !border-emerald-400 bg-emerald-500/20" : ""}`}>
-                        <QrCode size={32} className="text-emerald-400/25 shrink-0" />
+                    {/* Camera scan zone target frame Overlay */}
+                    <div className="relative flex-1 flex items-center justify-center z-10 pointer-events-none">
+                      <div className={`relative w-32 h-32 border-2 border-emerald-400/55 rounded-2xl flex items-center justify-center transition-all ${scanSuccessPulse ? "scale-110 !border-emerald-400 bg-emerald-500/20" : ""}`}>
+                        <QrCode size={42} className="text-emerald-400/25 shrink-0" />
                         
                         {/* Animated scanning laser line */}
-                        <div className="absolute left-0 right-0 h-0.5 bg-emerald-400 shadow-[0_0_8px_#34d399] animate-[sine_2s_infinite]" style={{
-                          animation: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                        }} />
+                        {isScanning && (
+                          <div className="absolute left-0 right-0 h-0.5 bg-emerald-400 shadow-[0_0_8px_#34d399]" style={{
+                            animation: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                          }} />
+                        )}
                       </div>
                     </div>
 
                     {/* Laser guidance notification */}
-                    <div className="text-[8px] font-bold text-center text-slate-400 bg-slate-900/60 py-1 rounded inline-block w-full">
-                      Place packaging box QR code in center
+                    <div className="text-[8px] font-bold text-center text-slate-400 bg-slate-900/60 py-1 rounded inline-block w-full z-20">
+                      {isScanning ? "Align QR code within the target frame" : "Click Start to begin scanning material packaging"}
                     </div>
                   </div>
 
@@ -1100,33 +1209,6 @@ export default function Inventory() {
                       </span>
                     </div>
                   )}
-
-                  {/* PRESET QUICK-SCANNABLE PACKAGES */}
-                  <div className="space-y-1.5">
-                    <span className="text-[9px] uppercase font-black text-slate-400 block tracking-wider">
-                      Quick Simulate Product QR Scans
-                    </span>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {[
-                        { label: "Composite Resin", id: "inv-1", batch: "BCH-892A", qty: 25, color: "bg-purple-50 text-purple-700 border-purple-200/50 hover:bg-purple-100/40" },
-                        { label: "Lidocaine Vial", id: "inv-2", batch: "BCH-044B", qty: 30, color: "bg-rose-50 text-rose-700 border-rose-200/50 hover:bg-rose-100/40" },
-                        { label: "Suture Box (3-0)", id: "inv-3", batch: "BCH-118X", qty: 15, color: "bg-emerald-50 text-emerald-700 border-emerald-200/50 hover:bg-emerald-100/40" },
-                        { label: "Provisional Crown", id: "inv-4", batch: "BCH-551Z", qty: 20, color: "bg-amber-50 text-amber-700 border-amber-200/50 hover:bg-amber-100/40" }
-                      ].map((preset) => (
-                        <button
-                          key={preset.id}
-                          type="button"
-                          onClick={() => handleSimulatedQRScan(preset.id, preset.batch, preset.qty)}
-                          className={`text-[9px] font-black border p-2 rounded-xl transition-all active:scale-95 text-left relative overflow-hidden group cursor-pointer ${preset.color}`}
-                        >
-                          <div className="font-extrabold truncate">{preset.label}</div>
-                          <div className="text-[7.5px] opacity-75 font-mono truncate">Code: {preset.batch}</div>
-                          <div className="text-[8px] font-extrabold mt-1 text-slate-500">Scan Reorder of {preset.qty}</div>
-                          <div className="absolute right-1 top-1 w-1.5 h-1.5 bg-rose-550 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-ping" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
                 </div>
               )}

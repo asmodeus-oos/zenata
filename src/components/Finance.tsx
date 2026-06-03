@@ -77,7 +77,7 @@ export default function Finance({ onSwitchTab, onSelectPatient }: FinanceProps) 
     const dateMatch = patientAppts.find(a => a.date === rec.date);
     if (dateMatch) return dateMatch.doctorName;
     if (patientAppts.length > 0) return patientAppts[0].doctorName;
-    return "Dr. Clara Mendes";
+    return "Practitioner";
   };
 
   // Format helper for calendar strings

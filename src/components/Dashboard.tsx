@@ -407,7 +407,7 @@ export default function Dashboard({ onSwitchTab, onSelectPatient }: DashboardPro
                     </div>
 
                     <div className="flex items-center gap-2 self-end md:self-center">
-                      <span className="text-xs text-slate-500 font-medium tracking-tight">Assigned: <strong>{app.doctorName.replace("Dr. ", "")}</strong></span>
+                      <span className="text-xs text-slate-500 font-medium tracking-tight">Assigned: <strong>{app.doctorName ? app.doctorName.replace("Dr. ", "") : "Practitioner"}</strong></span>
                       <span className={`text-[10px] uppercase font-bold px-2.5 py-1 rounded-lg ${
                         app.status === "Scheduled" 
                           ? "bg-amber-100 text-amber-700 border border-amber-200" 
