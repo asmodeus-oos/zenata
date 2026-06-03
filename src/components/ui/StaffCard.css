@@ -1,0 +1,400 @@
+
+:root {
+  --staff-card-bg-light: rgba(255, 255, 255, 0.7);
+  --staff-card-bg-dark: rgba(30, 41, 59, 0.7);
+  --staff-card-border-light: rgba(226, 232, 240, 0.5);
+  --staff-card-border-dark: rgba(51, 65, 85, 0.5);
+  --staff-card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  --staff-card-shadow-hover: 0 20px 48px rgba(0, 0, 0, 0.1);
+  --staff-card-radius: 32px;
+  --staff-card-accent: #2563eb;
+  --staff-card-accent-soft: rgba(37, 99, 235, 0.1);
+  --staff-card-success: #10b981;
+  --staff-card-warning: #f59e0b;
+  --staff-card-danger: #ef4444;
+  --staff-card-neutral: #64748b;
+  --staff-card-text-primary: #0f172a;
+  --staff-card-text-secondary: #64748b;
+  --staff-card-text-muted: #94a3b8;
+}
+
+.dark {
+  --staff-card-text-primary: #f8fafc;
+  --staff-card-text-secondary: #94a3b8;
+  --staff-card-text-muted: #64748b;
+}
+
+.staff-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  gap: 24px;
+  background: var(--staff-card-bg-light);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--staff-card-border-light);
+  border-radius: var(--staff-card-radius);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 10px 15px -3px rgba(0, 0, 0, 0.05),
+    0 20px 25px -5px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  height: 100%;
+}
+
+.dark .staff-card {
+  background: var(--staff-card-bg-dark);
+  border-color: var(--staff-card-border-dark);
+  box-shadow: 
+    0 10px 30px -10px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.staff-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(37, 99, 235, 0.3);
+  border-color: var(--staff-card-accent);
+}
+
+/* Header Section */
+.staff-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.staff-card-avatar-container {
+  position: relative;
+}
+
+.staff-card-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-cover: cover;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.staff-card:hover .staff-card-avatar {
+  transform: scale(1.05);
+}
+
+.staff-card-status-dot {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.status-online { background-color: var(--staff-card-success); }
+.status-offline { background-color: var(--staff-card-neutral); }
+
+.staff-card-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.staff-card-badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.badge-you {
+  background: var(--staff-card-accent-soft);
+  color: var(--staff-card-accent);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.badge-owner {
+  background: rgba(79, 70, 229, 0.1);
+  color: #4f46e5;
+  border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+/* Info Section */
+.staff-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.staff-card-name {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--staff-card-text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.staff-card-specialty {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--staff-card-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Contact Section */
+.staff-card-contacts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.staff-card-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.dark .staff-card-contact-item {
+  background: rgba(15, 23, 42, 0.3);
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+.staff-card-contact-item:hover {
+  background: #ffffff;
+  border-color: var(--staff-card-accent);
+  transform: translateY(-2px);
+}
+
+.dark .staff-card-contact-item:hover {
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.staff-card-contact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #ffffff;
+  border-radius: 10px;
+  color: var(--staff-card-accent);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.dark .staff-card-contact-icon {
+  background: var(--staff-card-bg-dark);
+}
+
+.staff-card-contact-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.staff-card-contact-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--staff-card-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.staff-card-contact-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--staff-card-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Availability Section */
+.staff-card-availability {
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.02);
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dark .staff-card-availability {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.staff-card-availability-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.staff-card-availability-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--staff-card-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.staff-card-availability-time {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--staff-card-text-primary);
+  background: #ffffff;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-family: var(--font-mono);
+}
+
+.dark .staff-card-availability-time {
+  background: var(--staff-card-bg-dark);
+}
+
+.staff-card-days {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.dark .staff-card-days {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.staff-card-day {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 6px 0;
+  border-radius: 8px;
+  color: var(--staff-card-text-muted);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.staff-card-day.active {
+  background: #ffffff;
+  color: var(--staff-card-accent);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dark .staff-card-day.active {
+  background: var(--staff-card-bg-dark);
+}
+
+/* Footer Section */
+.staff-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--staff-card-border-light);
+}
+
+.dark .staff-card-footer {
+  border-color: var(--staff-card-border-dark);
+}
+
+.staff-card-roles {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.staff-card-role {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 9999px;
+  color: var(--staff-card-text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.dark .staff-card-role {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.staff-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.staff-card-action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--staff-card-accent);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+  transform: scale(1.05);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--staff-card-danger);
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.05);
+}
+
+.staff-card-room-selector {
+  width: 120px;
+}
+
+@media (max-width: 640px) {
+  .staff-card {
+    padding: 24px;
+  }
+  .staff-card-contacts {
+    grid-template-columns: 1fr;
+  }
+}

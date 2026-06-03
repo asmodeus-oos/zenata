@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
-import { signOut } from "firebase/auth";
+import { signOut, signInAnonymously } from "firebase/auth";
 import { 
   collection, 
   doc, 
@@ -43,7 +43,7 @@ interface ClinicalState {
   
   // Firestore Synchronization State & Handlers
   isSyncActive: boolean;
-  startFirestoreSync: () => void;
+  startFirestoreSync: () => Promise<void>;
   stopFirestoreSync: () => void;
   
   // Offline persistence and network status state
@@ -54,7 +54,7 @@ interface ClinicalState {
   setCacheSizeLimitMB: (size: number) => void;
   
   // Auth Operations
-  login: (username: string, password: string, role: UserRole) => boolean;
+  login: (username: string, password: string, role: UserRole) => Promise<boolean>;
   logout: () => void;
   registerStaff: (
     name: string, 
@@ -160,7 +160,16 @@ const initialAppointments: Appointment[] = [];
 const initialFinancials: FinancialRecord[] = [];
 
 const syncDoc = async (collectionName: string, id: string, data: any, op: OperationType) => {
-  if (!auth.currentUser) return;
+  // Allow sync if we have ANY auth state (including anonymous)
+  if (!auth.currentUser) {
+    try {
+      await signInAnonymously(auth);
+    } catch (e) {
+      console.warn("Auto-anonymous login for sync failed:", e);
+      return;
+    }
+  }
+  
   if (!useStore.getState().isSyncActive) return;
 
   try {
@@ -216,8 +225,17 @@ export const useStore = create<ClinicalState>()(
       setCacheSizeLimitMB: (size) => set({ cacheSizeLimitMB: size }),
       
       isSyncActive: false,
-      startFirestoreSync: () => {
-        if (!auth.currentUser) return;
+      startFirestoreSync: async () => {
+        // Ensure we have a session to read Firestore
+        if (!auth.currentUser) {
+          try {
+            await signInAnonymously(auth);
+          } catch (e) {
+            console.warn("Sync failed: Could not establish gateway session.", e);
+            return;
+          }
+        }
+
         if (get().isSyncActive) return;
         set({ isSyncActive: true });
 
@@ -290,13 +308,29 @@ export const useStore = create<ClinicalState>()(
         }
       },
       
-      login: (username, password, role) => {
+      login: async (username, password, role) => {
+        // Step 1: Ensure sync is active to get latest users from cloud
+        if (!get().isSyncActive) {
+          await get().startFirestoreSync();
+          // Small wait for first snapshot if on fresh device
+          await new Promise(r => setTimeout(r, 1000));
+        }
+
         const uLower = username.toLowerCase();
-        const found = get().users.find(u => u.username.toLowerCase() === uLower && u.role === role && u.isActive);
+        let found = get().users.find(u => u.username.toLowerCase() === uLower && u.role === role && u.isActive);
+        
         if (!found) return false;
-        if (!auth.currentUser && found.password && found.password !== password) return false;
+        
+        // Step 2: Password verification (Legacy custom password system)
+        if (found.password && found.password !== password) return false;
+        
+        // Step 3: System Bootstrap - If this is the "Owner" logging in for the first time 
+        // on a device that HAS it locally but Firestore is empty, force push.
+        if (found.id === "usr-1" || found.role === "admin") {
+           syncDoc("users", found.id, found, OperationType.UPDATE);
+        }
+
         set({ currentUser: found });
-        get().startFirestoreSync();
         return true;
       },
       
@@ -577,10 +611,19 @@ export const useStore = create<ClinicalState>()(
     {
       name: "zendenta-erp-storage-v4",
       partialize: (state) => {
-        const { currentUser, isSyncActive, ...rest } = state;
+        const { currentUser, isSyncActive, users, ...rest } = state;
         return rest;
       }
     }
   )
 );
+
+// INITIALIZATION: Start background sync to ensure users/credentials are available
+// even before the first login attempt on a new device.
+if (typeof window !== "undefined") {
+  // Use a small delay to ensure Firebase is fully initialized
+  setTimeout(() => {
+    useStore.getState().startFirestoreSync();
+  }, 500);
+}
 

@@ -43,6 +43,7 @@ import {
   UploadCloud
 } from "lucide-react";
 import { PremiumSelect } from "./ui/PremiumSelect";
+import { StaffCard } from "./ui/StaffCard";
 import { UserRole, User, DoctorShift } from "../types";
 
 export default function Staff() {
@@ -873,238 +874,17 @@ export default function Staff() {
 
           {/* ACTIVE ROSTERS GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {filteredUsers.map((usr) => {
-              const isOwner = usr.id === "usr-1";
-              const isSelf = currentUser?.id === usr.id;
-              
-              // Handle default avatars and color generation
-              const avatarBg = "2563EB";
-              const finalAvatar = usr.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(usr.name)}&background=${avatarBg}&color=fff&bold=true`;
-
-              const roleIcons: Record<string, any> = {
-                admin: Shield,
-                doctor: Stethoscope,
-                clinician: Stethoscope,
-                receptionist: Briefcase,
-                frontdesk: Briefcase,
-                accountant: Calculator
-              };
-
-              const roleLabels: Record<string, string> = {
-                admin: "Admin",
-                doctor: "Doctor",
-                clinician: "Dentist",
-                receptionist: "Reception",
-                frontdesk: "Front Desk",
-                accountant: "Accounting"
-              };
-
-              return (
-                <motion.div
-                  key={usr.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  className={`relative flex flex-col p-6 gap-6 bg-white/90 backdrop-blur-2xl rounded-[32px] transition-all duration-300 group overflow-hidden ${
-                    isSelf 
-                      ? 'border border-blue-400/40 shadow-[0_16px_40px_-12px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/10' 
-                      : 'border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.08)] hover:-translate-y-1'
-                  }`}
-                >
-                  {/* Header Section */}
-                  <div className="flex items-start justify-between">
-                    <div className="relative">
-                      <motion.div 
-                        whileHover={{ scale: 1.05 }}
-                        className="w-20 h-20 rounded-full border-[3px] border-white shadow-sm overflow-hidden bg-slate-100 ring-1 ring-slate-200/50"
-                      >
-                        <img src={finalAvatar} alt={usr.name} className="w-full h-full object-cover" />
-                      </motion.div>
-                      <div className={`absolute bottom-0 right-0 w-6 h-6 rounded-full border-[3px] border-white shadow-sm flex items-center justify-center ${usr.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                        {usr.isActive ? <div className="w-2 h-2 bg-white rounded-full" /> : <div className="w-2.5 h-0.5 bg-white rounded-full" />}
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col items-end gap-2">
-                      <div className="flex items-center gap-2">
-                        {isSelf && (
-                          <motion.span 
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-3.5 py-1.5 rounded-full bg-blue-50/90 text-blue-600 border border-blue-200/60 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs transition-colors hover:bg-blue-100"
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                            You
-                          </motion.span>
-                        )}
-                        {isOwner && (
-                          <motion.span 
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-3.5 py-1.5 rounded-full bg-indigo-50/90 text-indigo-600 border border-indigo-200/50 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs transition-colors hover:bg-indigo-100"
-                          >
-                            <Shield size={11} className="text-indigo-500" />
-                            Owner
-                          </motion.span>
-                        )}
-                      </div>
-                      
-                      {usr.assignedRoom && (
-                        <div className="w-32">
-                          <PremiumSelect
-                            value={usr.assignedRoom}
-                            onChange={(e) => isAdmin && updateUserProfile(usr.id, { assignedRoom: e.target.value })}
-                            disabled={!isAdmin}
-                            className="!h-8 !px-3 !rounded-full !bg-slate-50/80 !border-slate-200/60 !text-[11px] !font-bold shadow-xs hover:!bg-white"
-                          >
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
-                              <option key={num} value={`Room ${num}`}>Room {num}</option>
-                            ))}
-                          </PremiumSelect>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Information Section */}
-                  <div className="flex flex-col gap-1">
-                    <h3 className="text-[22px] font-bold text-slate-900 tracking-tight leading-none group-hover:text-blue-600 transition-colors">
-                      {usr.name}
-                    </h3>
-                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-1">
-                      {usr.specialty || (usr.role === "clinician" ? "Dentist Practitioner" : usr.role === "admin" ? "Practice Owner & Specialist" : "Clinic Front Desk Officer")}
-                    </p>
-                  </div>
-
-                  {/* Contact Cards Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <a 
-                      href={usr.phone ? `tel:${usr.phone}` : '#'} 
-                      onClick={e => !usr.phone && e.preventDefault()} 
-                      className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${usr.phone ? 'bg-slate-50/50 border-slate-100 hover:bg-blue-50/50 hover:border-blue-200/50 group/contact cursor-pointer shadow-xs' : 'bg-slate-50/30 border-transparent opacity-60 cursor-not-allowed'}`}
-                    >
-                      <div className={`p-2 rounded-xl ${usr.phone ? 'bg-white shadow-xs text-blue-500' : 'bg-slate-100 text-slate-400'}`}>
-                        <Phone size={14} />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Phone</span>
-                        <span className="text-[12px] font-bold text-slate-700 truncate">{usr.phone || "Missing"}</span>
-                      </div>
-                    </a>
-                    <a 
-                      href={usr.email ? `mailto:${usr.email}` : '#'} 
-                      onClick={e => !usr.email && e.preventDefault()} 
-                      className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${usr.email ? 'bg-slate-50/50 border-slate-100 hover:bg-indigo-50/50 hover:border-indigo-200/50 group/contact cursor-pointer shadow-xs' : 'bg-slate-50/30 border-transparent opacity-60 cursor-not-allowed'}`}
-                    >
-                      <div className={`p-2 rounded-xl ${usr.email ? 'bg-white shadow-xs text-indigo-500' : 'bg-slate-100 text-slate-400'}`}>
-                        <Mail size={14} />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email</span>
-                        <span className="text-[12px] font-bold text-slate-700 truncate">{usr.email || "Missing"}</span>
-                      </div>
-                    </a>
-                  </div>
-
-                  {/* Availability Scheduler Card */}
-                  <div className="flex flex-col p-4 rounded-[24px] bg-slate-50/80 border border-slate-100/50 gap-4 shadow-inner">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-slate-700">
-                        <Clock size={14} className="text-blue-500" />
-                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Availability</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-800 bg-white px-2.5 py-1 rounded-full shadow-xs border border-slate-200/40 font-mono">
-                        {usr.hours || "On-Call"}
-                      </span>
-                    </div>
-
-                    {/* Day Segmented Control */}
-                    <div className="flex items-center gap-1 p-1 bg-slate-200/40 rounded-xl border border-slate-200/20">
-                      {weekDays.map(day => {
-                        const isActive = usr.days?.includes(day);
-                        return (
-                          <div 
-                            key={day} 
-                            className="relative flex-1 flex justify-center items-center py-1.5 z-0"
-                          >
-                            {isActive && (
-                              <motion.div 
-                                layoutId={`active-day-${usr.id}`}
-                                className="absolute inset-0 bg-white rounded-lg shadow-xs z-[-1]"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                              />
-                            )}
-                            <span className={`text-[9px] font-black transition-all ${
-                              isActive ? 'text-blue-600' : 'text-slate-400'
-                            }`}>
-                              {day.substring(0, 3).toUpperCase()}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    </div>
-
-                    {/* Roles & Action Section */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100/60 mt-auto">
-                    {/* Role Collection */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {[usr.role, usr.role2].map((role, rIdx) => {
-                        if (!role || (role as string) === "none") return null;
-                        const Icon = roleIcons[role] || LucideUser;
-
-                        return (
-                          <div key={rIdx} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/50 text-slate-600 shadow-3xs">
-                            <Icon size={12} className="text-slate-400" />
-                            <span className="text-[10px] font-bold uppercase tracking-tight">{roleLabels[role] || role}</span>
-                          </div>
-                        );
-                      })}
-
-                      {!usr.isActive && (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200/50 shadow-3xs">
-                          <AlertTriangle size={11} className="text-rose-500" />
-                          <span className="text-[10px] font-black uppercase tracking-tight">Revoked</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Administrative Action Icons */}
-                    <div className="flex items-center gap-2">
-                      {isAdmin ? (
-                        <>
-                          <button
-                            onClick={() => handleOpenEditModal(usr)}
-                            className="flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-100 hover:bg-blue-700 transition-all cursor-pointer active:scale-90"
-                            title="Edit Personnel Profile"
-                          >
-                            <Settings size={18} />
-                          </button>
-                          {!isOwner && (
-                            <button
-                              onClick={() => {
-                                if (confirm(`Delete personnel record for ${usr.name}?`)) {
-                                  deleteStaff(usr.id);
-                                }
-                              }}
-                              className="flex items-center justify-center w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all cursor-pointer active:scale-90"
-                              title="Remove Personnel"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          )}
-                        </>
-                      ) : (
-                        <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-slate-400">
-                          <Lock size={16} />
-                        </div>
-                      )}
-                    </div>
-                    </div>
-
-                </motion.div>
-              );
-            })}
+            {filteredUsers.map((usr) => (
+              <StaffCard
+                key={usr.id}
+                user={usr}
+                isSelf={currentUser?.id === usr.id}
+                isAdmin={isAdmin}
+                onEdit={handleOpenEditModal}
+                onDelete={deleteStaff}
+                onUpdateRoom={(userId, room) => updateUserProfile(userId, { assignedRoom: room })}
+              />
+            ))}
           </div>
 
           {filteredUsers.length === 0 && (

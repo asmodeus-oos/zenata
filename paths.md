@@ -1,26 +1,36 @@
 .
 ├── dist
 │   ├── assets
-│   │   ├── charts-DUkztzuB.js
-│   │   ├── firebase-AX6SucCb.js
-│   │   ├── html2canvas.esm-QH1iLAAe.js
-│   │   ├── index-3Qw2CpVo.css
-│   │   ├── index-CGVoeIWo.js
-│   │   ├── index.es-DDb4W6Sg.js
+│   │   ├── html2canvas.esm-B0tyYwQk.js
+│   │   ├── index-CJu70at9.css
+│   │   ├── index.es-B7PaqoDz.js
+│   │   ├── index--rCu6cHs.js
 │   │   ├── purify.es-BG-cG56M.js
-│   │   ├── ui-2ViK8Gpt.js
-│   │   └── vendor-l0sNRNKZ.js
-│   └── index.html
+│   │   ├── vendor-charts-B3VkRhsH.js
+│   │   ├── vendor-firebase-qx4Z7B1S.js
+│   │   ├── vendor-react-l0sNRNKZ.js
+│   │   ├── vendor-ui-BLe6hzbA.js
+│   │   └── vendor-utils-Cb2IhU1S.js
+│   ├── index.html
+│   ├── logo.png
+│   └── _redirects
 ├── docs
 │   ├── production-architecture.md
+│   ├── production-database-architecture.md
 │   └── superpowers
 │       ├── plans
-│       │   └── 2026-05-28-outstanding-balances-redesign.md
+│       │   ├── 2026-05-28-outstanding-balances-redesign.md
+│       │   ├── 2026-05-30-staff-wizard-updates.md
+│       │   ├── 2026-06-03-premium-select-implementation.md
+│       │   ├── 2026-06-03-premium-select-migration-completion.md
+│       │   └── 2026-06-03-staff-card-redesign.md
 │       └── specs
-│           └── 2026-05-28-outstanding-balances-redesign.md
+│           ├── 2026-05-28-outstanding-balances-redesign.md
+│           └── 2026-06-03-step3-layout-restructure-design.md
 ├── firebase-applet-config.json
 ├── firebase-blueprint.json
 ├── firestore.rules
+├── fix-eio.js
 ├── functions
 │   ├── package.json
 │   ├── src
@@ -23495,6 +23505,333 @@
 │   │   ├── package.json
 │   │   ├── README.md
 │   │   └── tsconfig.json
+│   ├── html5-qrcode
+│   │   ├── camera
+│   │   │   ├── core.d.ts
+│   │   │   ├── core-impl.d.ts
+│   │   │   ├── factories.d.ts
+│   │   │   ├── permissions.d.ts
+│   │   │   └── retriever.d.ts
+│   │   ├── cjs
+│   │   │   ├── camera
+│   │   │   │   ├── core.d.ts
+│   │   │   │   ├── core-impl.d.ts
+│   │   │   │   ├── core-impl.js
+│   │   │   │   ├── core-impl.js.map
+│   │   │   │   ├── core.js
+│   │   │   │   ├── core.js.map
+│   │   │   │   ├── factories.d.ts
+│   │   │   │   ├── factories.js
+│   │   │   │   ├── factories.js.map
+│   │   │   │   ├── permissions.d.ts
+│   │   │   │   ├── permissions.js
+│   │   │   │   ├── permissions.js.map
+│   │   │   │   ├── retriever.d.ts
+│   │   │   │   ├── retriever.js
+│   │   │   │   └── retriever.js.map
+│   │   │   ├── code-decoder.d.ts
+│   │   │   ├── code-decoder.js
+│   │   │   ├── code-decoder.js.map
+│   │   │   ├── core.d.ts
+│   │   │   ├── core.js
+│   │   │   ├── core.js.map
+│   │   │   ├── experimental-features.d.ts
+│   │   │   ├── experimental-features.js
+│   │   │   ├── experimental-features.js.map
+│   │   │   ├── html5-qrcode.d.ts
+│   │   │   ├── html5-qrcode.js
+│   │   │   ├── html5-qrcode.js.map
+│   │   │   ├── html5-qrcode-scanner.d.ts
+│   │   │   ├── html5-qrcode-scanner.js
+│   │   │   ├── html5-qrcode-scanner.js.map
+│   │   │   ├── image-assets.d.ts
+│   │   │   ├── image-assets.js
+│   │   │   ├── image-assets.js.map
+│   │   │   ├── index.d.ts
+│   │   │   ├── index.js
+│   │   │   ├── index.js.map
+│   │   │   ├── native-bar-code-detector.d.ts
+│   │   │   ├── native-bar-code-detector.js
+│   │   │   ├── native-bar-code-detector.js.map
+│   │   │   ├── state-manager.d.ts
+│   │   │   ├── state-manager.js
+│   │   │   ├── state-manager.js.map
+│   │   │   ├── storage.d.ts
+│   │   │   ├── storage.js
+│   │   │   ├── storage.js.map
+│   │   │   ├── strings.d.ts
+│   │   │   ├── strings.js
+│   │   │   ├── strings.js.map
+│   │   │   ├── ui
+│   │   │   │   └── scanner
+│   │   │   │       ├── base.d.ts
+│   │   │   │       ├── base.js
+│   │   │   │       ├── base.js.map
+│   │   │   │       ├── camera-selection-ui.d.ts
+│   │   │   │       ├── camera-selection-ui.js
+│   │   │   │       ├── camera-selection-ui.js.map
+│   │   │   │       ├── camera-zoom-ui.d.ts
+│   │   │   │       ├── camera-zoom-ui.js
+│   │   │   │       ├── camera-zoom-ui.js.map
+│   │   │   │       ├── file-selection-ui.d.ts
+│   │   │   │       ├── file-selection-ui.js
+│   │   │   │       ├── file-selection-ui.js.map
+│   │   │   │       ├── scan-type-selector.d.ts
+│   │   │   │       ├── scan-type-selector.js
+│   │   │   │       ├── scan-type-selector.js.map
+│   │   │   │       ├── torch-button.d.ts
+│   │   │   │       ├── torch-button.js
+│   │   │   │       └── torch-button.js.map
+│   │   │   ├── ui.d.ts
+│   │   │   ├── ui.js
+│   │   │   ├── ui.js.map
+│   │   │   ├── utils.d.ts
+│   │   │   ├── utils.js
+│   │   │   ├── utils.js.map
+│   │   │   ├── zxing-html5-qrcode-decoder.d.ts
+│   │   │   ├── zxing-html5-qrcode-decoder.js
+│   │   │   └── zxing-html5-qrcode-decoder.js.map
+│   │   ├── code-decoder.d.ts
+│   │   ├── core.d.ts
+│   │   ├── es2015
+│   │   │   ├── camera
+│   │   │   │   ├── core.d.ts
+│   │   │   │   ├── core-impl.d.ts
+│   │   │   │   ├── core-impl.js
+│   │   │   │   ├── core-impl.js.map
+│   │   │   │   ├── core.js
+│   │   │   │   ├── core.js.map
+│   │   │   │   ├── factories.d.ts
+│   │   │   │   ├── factories.js
+│   │   │   │   ├── factories.js.map
+│   │   │   │   ├── permissions.d.ts
+│   │   │   │   ├── permissions.js
+│   │   │   │   ├── permissions.js.map
+│   │   │   │   ├── retriever.d.ts
+│   │   │   │   ├── retriever.js
+│   │   │   │   └── retriever.js.map
+│   │   │   ├── code-decoder.d.ts
+│   │   │   ├── code-decoder.js
+│   │   │   ├── code-decoder.js.map
+│   │   │   ├── core.d.ts
+│   │   │   ├── core.js
+│   │   │   ├── core.js.map
+│   │   │   ├── experimental-features.d.ts
+│   │   │   ├── experimental-features.js
+│   │   │   ├── experimental-features.js.map
+│   │   │   ├── html5-qrcode.d.ts
+│   │   │   ├── html5-qrcode.js
+│   │   │   ├── html5-qrcode.js.map
+│   │   │   ├── html5-qrcode-scanner.d.ts
+│   │   │   ├── html5-qrcode-scanner.js
+│   │   │   ├── html5-qrcode-scanner.js.map
+│   │   │   ├── image-assets.d.ts
+│   │   │   ├── image-assets.js
+│   │   │   ├── image-assets.js.map
+│   │   │   ├── index.d.ts
+│   │   │   ├── index.js
+│   │   │   ├── index.js.map
+│   │   │   ├── native-bar-code-detector.d.ts
+│   │   │   ├── native-bar-code-detector.js
+│   │   │   ├── native-bar-code-detector.js.map
+│   │   │   ├── state-manager.d.ts
+│   │   │   ├── state-manager.js
+│   │   │   ├── state-manager.js.map
+│   │   │   ├── storage.d.ts
+│   │   │   ├── storage.js
+│   │   │   ├── storage.js.map
+│   │   │   ├── strings.d.ts
+│   │   │   ├── strings.js
+│   │   │   ├── strings.js.map
+│   │   │   ├── ui
+│   │   │   │   └── scanner
+│   │   │   │       ├── base.d.ts
+│   │   │   │       ├── base.js
+│   │   │   │       ├── base.js.map
+│   │   │   │       ├── camera-selection-ui.d.ts
+│   │   │   │       ├── camera-selection-ui.js
+│   │   │   │       ├── camera-selection-ui.js.map
+│   │   │   │       ├── camera-zoom-ui.d.ts
+│   │   │   │       ├── camera-zoom-ui.js
+│   │   │   │       ├── camera-zoom-ui.js.map
+│   │   │   │       ├── file-selection-ui.d.ts
+│   │   │   │       ├── file-selection-ui.js
+│   │   │   │       ├── file-selection-ui.js.map
+│   │   │   │       ├── scan-type-selector.d.ts
+│   │   │   │       ├── scan-type-selector.js
+│   │   │   │       ├── scan-type-selector.js.map
+│   │   │   │       ├── torch-button.d.ts
+│   │   │   │       ├── torch-button.js
+│   │   │   │       └── torch-button.js.map
+│   │   │   ├── ui.d.ts
+│   │   │   ├── ui.js
+│   │   │   ├── ui.js.map
+│   │   │   ├── utils.d.ts
+│   │   │   ├── utils.js
+│   │   │   ├── utils.js.map
+│   │   │   ├── zxing-html5-qrcode-decoder.d.ts
+│   │   │   ├── zxing-html5-qrcode-decoder.js
+│   │   │   └── zxing-html5-qrcode-decoder.js.map
+│   │   ├── esm
+│   │   │   ├── camera
+│   │   │   │   ├── core.d.ts
+│   │   │   │   ├── core-impl.d.ts
+│   │   │   │   ├── core-impl.js
+│   │   │   │   ├── core-impl.js.map
+│   │   │   │   ├── core.js
+│   │   │   │   ├── core.js.map
+│   │   │   │   ├── factories.d.ts
+│   │   │   │   ├── factories.js
+│   │   │   │   ├── factories.js.map
+│   │   │   │   ├── permissions.d.ts
+│   │   │   │   ├── permissions.js
+│   │   │   │   ├── permissions.js.map
+│   │   │   │   ├── retriever.d.ts
+│   │   │   │   ├── retriever.js
+│   │   │   │   └── retriever.js.map
+│   │   │   ├── code-decoder.d.ts
+│   │   │   ├── code-decoder.js
+│   │   │   ├── code-decoder.js.map
+│   │   │   ├── core.d.ts
+│   │   │   ├── core.js
+│   │   │   ├── core.js.map
+│   │   │   ├── experimental-features.d.ts
+│   │   │   ├── experimental-features.js
+│   │   │   ├── experimental-features.js.map
+│   │   │   ├── html5-qrcode.d.ts
+│   │   │   ├── html5-qrcode.js
+│   │   │   ├── html5-qrcode.js.map
+│   │   │   ├── html5-qrcode-scanner.d.ts
+│   │   │   ├── html5-qrcode-scanner.js
+│   │   │   ├── html5-qrcode-scanner.js.map
+│   │   │   ├── image-assets.d.ts
+│   │   │   ├── image-assets.js
+│   │   │   ├── image-assets.js.map
+│   │   │   ├── index.d.ts
+│   │   │   ├── index.js
+│   │   │   ├── index.js.map
+│   │   │   ├── native-bar-code-detector.d.ts
+│   │   │   ├── native-bar-code-detector.js
+│   │   │   ├── native-bar-code-detector.js.map
+│   │   │   ├── state-manager.d.ts
+│   │   │   ├── state-manager.js
+│   │   │   ├── state-manager.js.map
+│   │   │   ├── storage.d.ts
+│   │   │   ├── storage.js
+│   │   │   ├── storage.js.map
+│   │   │   ├── strings.d.ts
+│   │   │   ├── strings.js
+│   │   │   ├── strings.js.map
+│   │   │   ├── ui
+│   │   │   │   └── scanner
+│   │   │   │       ├── base.d.ts
+│   │   │   │       ├── base.js
+│   │   │   │       ├── base.js.map
+│   │   │   │       ├── camera-selection-ui.d.ts
+│   │   │   │       ├── camera-selection-ui.js
+│   │   │   │       ├── camera-selection-ui.js.map
+│   │   │   │       ├── camera-zoom-ui.d.ts
+│   │   │   │       ├── camera-zoom-ui.js
+│   │   │   │       ├── camera-zoom-ui.js.map
+│   │   │   │       ├── file-selection-ui.d.ts
+│   │   │   │       ├── file-selection-ui.js
+│   │   │   │       ├── file-selection-ui.js.map
+│   │   │   │       ├── scan-type-selector.d.ts
+│   │   │   │       ├── scan-type-selector.js
+│   │   │   │       ├── scan-type-selector.js.map
+│   │   │   │       ├── torch-button.d.ts
+│   │   │   │       ├── torch-button.js
+│   │   │   │       └── torch-button.js.map
+│   │   │   ├── ui.d.ts
+│   │   │   ├── ui.js
+│   │   │   ├── ui.js.map
+│   │   │   ├── utils.d.ts
+│   │   │   ├── utils.js
+│   │   │   ├── utils.js.map
+│   │   │   ├── zxing-html5-qrcode-decoder.d.ts
+│   │   │   ├── zxing-html5-qrcode-decoder.js
+│   │   │   └── zxing-html5-qrcode-decoder.js.map
+│   │   ├── experimental-features.d.ts
+│   │   ├── html5-qrcode.d.ts
+│   │   ├── html5-qrcode.min.js
+│   │   ├── html5-qrcode-scanner.d.ts
+│   │   ├── image-assets.d.ts
+│   │   ├── index.d.ts
+│   │   ├── LICENSE
+│   │   ├── native-bar-code-detector.d.ts
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── src
+│   │   │   ├── camera
+│   │   │   │   ├── core.d.ts
+│   │   │   │   ├── core-impl.d.ts
+│   │   │   │   ├── core-impl.ts
+│   │   │   │   ├── core.ts
+│   │   │   │   ├── factories.d.ts
+│   │   │   │   ├── factories.ts
+│   │   │   │   ├── permissions.d.ts
+│   │   │   │   ├── permissions.ts
+│   │   │   │   ├── retriever.d.ts
+│   │   │   │   └── retriever.ts
+│   │   │   ├── code-decoder.d.ts
+│   │   │   ├── code-decoder.ts
+│   │   │   ├── core.d.ts
+│   │   │   ├── core.ts
+│   │   │   ├── experimental-features.d.ts
+│   │   │   ├── experimental-features.ts
+│   │   │   ├── html5-qrcode.d.ts
+│   │   │   ├── html5-qrcode-scanner.d.ts
+│   │   │   ├── html5-qrcode-scanner.ts
+│   │   │   ├── html5-qrcode.ts
+│   │   │   ├── image-assets.d.ts
+│   │   │   ├── image-assets.ts
+│   │   │   ├── index.d.ts
+│   │   │   ├── index.ts
+│   │   │   ├── native-bar-code-detector.d.ts
+│   │   │   ├── native-bar-code-detector.ts
+│   │   │   ├── state-manager.d.ts
+│   │   │   ├── state-manager.ts
+│   │   │   ├── storage.d.ts
+│   │   │   ├── storage.ts
+│   │   │   ├── strings.d.ts
+│   │   │   ├── strings.ts
+│   │   │   ├── ui
+│   │   │   │   └── scanner
+│   │   │   │       ├── base.d.ts
+│   │   │   │       ├── base.ts
+│   │   │   │       ├── camera-selection-ui.d.ts
+│   │   │   │       ├── camera-selection-ui.ts
+│   │   │   │       ├── camera-zoom-ui.d.ts
+│   │   │   │       ├── camera-zoom-ui.ts
+│   │   │   │       ├── file-selection-ui.d.ts
+│   │   │   │       ├── file-selection-ui.ts
+│   │   │   │       ├── scan-type-selector.d.ts
+│   │   │   │       ├── scan-type-selector.ts
+│   │   │   │       ├── torch-button.d.ts
+│   │   │   │       └── torch-button.ts
+│   │   │   ├── ui.d.ts
+│   │   │   ├── ui.ts
+│   │   │   ├── utils.d.ts
+│   │   │   ├── utils.ts
+│   │   │   ├── zxing-html5-qrcode-decoder.d.ts
+│   │   │   └── zxing-html5-qrcode-decoder.ts
+│   │   ├── state-manager.d.ts
+│   │   ├── storage.d.ts
+│   │   ├── strings.d.ts
+│   │   ├── third_party
+│   │   │   ├── zxing-js.umd.d.ts
+│   │   │   └── zxing-js.umd.js
+│   │   ├── ui
+│   │   │   └── scanner
+│   │   │       ├── base.d.ts
+│   │   │       ├── camera-selection-ui.d.ts
+│   │   │       ├── camera-zoom-ui.d.ts
+│   │   │       ├── file-selection-ui.d.ts
+│   │   │       ├── scan-type-selector.d.ts
+│   │   │       └── torch-button.d.ts
+│   │   ├── ui.d.ts
+│   │   ├── utils.d.ts
+│   │   └── zxing-html5-qrcode-decoder.d.ts
 │   ├── http-errors
 │   │   ├── HISTORY.md
 │   │   ├── index.js
@@ -32243,6 +32580,9 @@
 ├── package.json
 ├── package-lock.json
 ├── paths.md
+├── public
+│   ├── logo.png
+│   └── _redirects
 ├── README.md
 ├── security_spec.md
 ├── src
@@ -32253,7 +32593,6 @@
 │   │   ├── Appointments.tsx
 │   │   ├── Dashboard.tsx
 │   │   ├── Finance.tsx
-│   │   ├── Finance.tsx.pre-redesign-backup
 │   │   ├── Inventory.tsx
 │   │   ├── Patients.tsx
 │   │   ├── Performance.tsx
@@ -32261,6 +32600,10 @@
 │   │   ├── Settings.tsx
 │   │   ├── Sidebar.tsx
 │   │   ├── Staff.tsx
+│   │   ├── ui
+│   │   │   ├── PremiumSelect.tsx
+│   │   │   ├── StaffCard.css
+│   │   │   └── StaffCard.tsx
 │   │   └── ZendentaLogo.tsx
 │   ├── firebase.ts
 │   ├── index.css
@@ -32277,6 +32620,7 @@
 │   ├── types.ts
 │   └── uiStore.ts
 ├── tsconfig.json
+├── vercel.json
 └── vite.config.ts
 
-4592 directories, 27688 files
+4615 directories, 28009 files

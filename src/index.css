@@ -62,6 +62,24 @@ html.dark #clinic-login-portal {
   background-color: #0f172a !important;
 }
 
+@layer base {
+  /* Elevate custom cards globally with pure white background, soft borders, and smooth elevated shadow */
+  aside,
+  [class*="rounded-[28px]"],
+  [class*="rounded-[32px]"] {
+    background-color: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+  }
+  html.dark aside,
+  html.dark [class*="rounded-[28px]"],
+  html.dark [class*="rounded-[32px]"] {
+    background-color: #1e293b; /* slate-800 */
+    border: 1px solid rgba(51, 65, 85, 0.6); /* slate-700 */
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  }
+}
+
 @layer utilities {
   .frosted-bg {
     background-color: #f1f2fe; /* solid #f1f2fe background */
@@ -115,22 +133,6 @@ html.dark #clinic-login-portal {
   html.dark .frosted-glass-panel {
     background-color: #1e293b !important;
     border: 1px solid rgba(51, 65, 85, 0.6) !important;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2) !important;
-  }
-
-  /* Elevate custom cards globally with pure white background, soft borders, and smooth elevated shadow */
-  aside,
-  [class*="rounded-[28px]"],
-  [class*="rounded-[32px]"] {
-    background-color: #ffffff !important;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02) !important;
-    border: 1px solid rgba(226, 232, 240, 0.6) !important;
-  }
-  html.dark aside,
-  html.dark [class*="rounded-[28px]"],
-  html.dark [class*="rounded-[32px]"] {
-    background-color: #1e293b !important; /* slate-800 */
-    border: 1px solid rgba(51, 65, 85, 0.6) !important; /* slate-700 */
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2) !important;
   }
 
@@ -436,4 +438,3 @@ html.dark ::-webkit-scrollbar-button:single-button:horizontal:decrement {
   animation: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-

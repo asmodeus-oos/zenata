@@ -139,9 +139,9 @@ export default function App() {
 
   const MASTER_KEY = "UQBPQl-j7IW5K3yYm7vu3WWANjyDd8Q2sUQvlxMAlcgxUbkb";
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const ok = login(loginUsername, loginPassword, loginRole);
+    const ok = await login(loginUsername, loginPassword, loginRole);
     if (ok) {
       setLoginError(false);
     } else {
