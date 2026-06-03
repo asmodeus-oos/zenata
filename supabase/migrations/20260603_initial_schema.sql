@@ -144,7 +144,7 @@ BEGIN
   );
   RETURN new;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Trigger on auth.users
 CREATE TRIGGER on_auth_user_created
@@ -193,7 +193,7 @@ BEGIN
 
   RETURN v_appointment;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- 4. Security (RLS)
 
@@ -229,7 +229,7 @@ BEGIN
     WHERE id = auth.uid() AND role IN ('admin', 'clinician', 'frontdesk')
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Patients Policies
 CREATE POLICY "Staff can manage patients." ON public.patients
