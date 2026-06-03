@@ -86,7 +86,9 @@ export default function Staff() {
   const [wizName, setWizName] = useState("");
   const [wizUsername, setWizUsername] = useState("");
   const [wizRole, setWizRole] = useState<UserRole>("user");
-  const [wizRole2, setWizRole2] = useState<"none" | UserRole>("none");
+  const [wizRole2, setWizRole2] = useState<"none" | UserRole>("clinician");
+  const [wizGender, setWizGender] = useState<"Male" | "Female">("Female");
+  const [wizDoctorId, setWizDoctorId] = useState("");
   const [wizEmail, setWizEmail] = useState("");
   const [wizPhone, setWizPhone] = useState("");
   const [wizPassword, setWizPassword] = useState("");
@@ -271,32 +273,67 @@ export default function Staff() {
     }
   }, []);
 
+  const wizFromHourCleanup = useRef<{ node: HTMLInputElement; handler: (e: WheelEvent) => void } | null>(null);
   const wizFromHourRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (wizFromHourCleanup.current) {
+      wizFromHourCleanup.current.node.removeEventListener("wheel", wizFromHourCleanup.current.handler);
+      wizFromHourCleanup.current = null;
+    }
     if (node) {
-      const handleWheel = (e: WheelEvent) => { e.preventDefault(); setWizFromHour(e.deltaY < 0 ? incrementHourFunc : decrementHourFunc); };
+      const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        setWizFromHour(e.deltaY < 0 ? incrementHourFunc : decrementHourFunc);
+      };
       node.addEventListener("wheel", handleWheel, { passive: false });
-      return () => node.removeEventListener("wheel", handleWheel);
+      wizFromHourCleanup.current = { node, handler: handleWheel };
     }
   }, []);
+
+  const wizFromMinCleanup = useRef<{ node: HTMLInputElement; handler: (e: WheelEvent) => void } | null>(null);
   const wizFromMinRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (wizFromMinCleanup.current) {
+      wizFromMinCleanup.current.node.removeEventListener("wheel", wizFromMinCleanup.current.handler);
+      wizFromMinCleanup.current = null;
+    }
     if (node) {
-      const handleWheel = (e: WheelEvent) => { e.preventDefault(); setWizFromMinute(e.deltaY < 0 ? incrementMinuteFunc : decrementMinuteFunc); };
+      const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        setWizFromMinute(e.deltaY < 0 ? incrementMinuteFunc : decrementMinuteFunc);
+      };
       node.addEventListener("wheel", handleWheel, { passive: false });
-      return () => node.removeEventListener("wheel", handleWheel);
+      wizFromMinCleanup.current = { node, handler: handleWheel };
     }
   }, []);
+
+  const wizToHourCleanup = useRef<{ node: HTMLInputElement; handler: (e: WheelEvent) => void } | null>(null);
   const wizToHourRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (wizToHourCleanup.current) {
+      wizToHourCleanup.current.node.removeEventListener("wheel", wizToHourCleanup.current.handler);
+      wizToHourCleanup.current = null;
+    }
     if (node) {
-      const handleWheel = (e: WheelEvent) => { e.preventDefault(); setWizToHour(e.deltaY < 0 ? incrementHourFunc : decrementHourFunc); };
+      const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        setWizToHour(e.deltaY < 0 ? incrementHourFunc : decrementHourFunc);
+      };
       node.addEventListener("wheel", handleWheel, { passive: false });
-      return () => node.removeEventListener("wheel", handleWheel);
+      wizToHourCleanup.current = { node, handler: handleWheel };
     }
   }, []);
+
+  const wizToMinCleanup = useRef<{ node: HTMLInputElement; handler: (e: WheelEvent) => void } | null>(null);
   const wizToMinRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (wizToMinCleanup.current) {
+      wizToMinCleanup.current.node.removeEventListener("wheel", wizToMinCleanup.current.handler);
+      wizToMinCleanup.current = null;
+    }
     if (node) {
-      const handleWheel = (e: WheelEvent) => { e.preventDefault(); setWizToMinute(e.deltaY < 0 ? incrementMinuteFunc : decrementMinuteFunc); };
+      const handleWheel = (e: WheelEvent) => {
+        e.preventDefault();
+        setWizToMinute(e.deltaY < 0 ? incrementMinuteFunc : decrementMinuteFunc);
+      };
       node.addEventListener("wheel", handleWheel, { passive: false });
-      return () => node.removeEventListener("wheel", handleWheel);
+      wizToMinCleanup.current = { node, handler: handleWheel };
     }
   }, []);
 
@@ -439,6 +476,8 @@ export default function Staff() {
 
   const handleRegisterWizard = (e: React.FormEvent) => {
     e.preventDefault();
+    if (wizardStep !== 4) return;
+    
     if (!wizName || !wizUsername) {
       alert("Please ensure Name and Username are populated.");
       return;
@@ -464,14 +503,18 @@ export default function Staff() {
       wizRoom,
       wizDays,
       combinedWizHours,
-      wizRole2 === "none" ? undefined : wizRole2
+      wizRole2 === "none" ? undefined : wizRole2,
+      wizGender,
+      wizDoctorId
     );
 
     // Reset onboarding form
     setWizName("");
     setWizUsername("");
     setWizRole("user");
-    setWizRole2("none");
+    setWizRole2("clinician");
+    setWizGender("Female");
+    setWizDoctorId("");
     setWizEmail("");
     setWizPhone("");
     setWizPassword("");
@@ -686,6 +729,14 @@ export default function Staff() {
     if (roleFilter === "all") return matchesSearch;
     return matchesSearch && u.role === roleFilter;
   });
+
+  const isStepValid = () => {
+    if (wizardStep === 1) return wizName.trim() !== "" && wizUsername.trim() !== "";
+    if (wizardStep === 2) return true;
+    if (wizardStep === 3) return wizDays.length > 0;
+    if (wizardStep === 4) return true;
+    return true;
+  };
 
   return (
     <div className="space-y-6 animate-fade-in" id="staff-master-panel">
@@ -1934,7 +1985,8 @@ export default function Staff() {
                 <button
                   type="button"
                   onClick={() => setWizardStep(prev => prev + 1)}
-                  className="px-8 h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold text-[13px] rounded-xl flex items-center gap-2 transition-all cursor-pointer active:scale-95 shadow-md shadow-slate-200"
+                  disabled={!isStepValid()}
+                  className="px-8 h-12 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white font-bold text-[13px] rounded-xl flex items-center gap-2 transition-all cursor-pointer active:scale-95 shadow-md shadow-slate-200"
                 >
                   <span>Continue</span>
                   <ArrowRight size={16} />

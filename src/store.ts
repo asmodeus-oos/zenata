@@ -68,7 +68,9 @@ interface ClinicalState {
     assignedRoom?: string,
     days?: string[],
     hours?: string,
-    role2?: UserRole
+    role2?: UserRole,
+    gender?: "Male" | "Female",
+    doctorId?: string
   ) => void;
   toggleStaffStatus: (userId: string) => void;
   deleteStaff: (userId: string) => void;
@@ -292,9 +294,9 @@ export const useStore = create<ClinicalState>()(
         signOut(auth).catch(() => {});
       },
 
-      registerStaff: (name, username, role, email = "", phone = "", _password = "", avatarUrl = "", specialty = "", assignedRoom = "", days = [], hours = "", role2?: UserRole) => {
+      registerStaff: (name, username, role, email = "", phone = "", _password = "", avatarUrl = "", specialty = "", assignedRoom = "", days = [], hours = "", role2?: UserRole, gender?: "Male" | "Female", doctorId?: string) => {
         const id = `usr-${Date.now()}`;
-        const newU: User = { id, name, username, role, role2, isActive: true, email, phone, avatarUrl, specialty, assignedRoom, days, hours };
+        const newU: User = { id, name, username, role, role2, isActive: true, email, phone, avatarUrl, specialty, assignedRoom, days, hours, gender, doctorId };
         const isClinical = role === "clinician" || role === "doctor" || role2 === "clinician" || role2 === "doctor";
         set(state => ({ 
           users: [...state.users, newU],
