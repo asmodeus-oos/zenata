@@ -39,7 +39,8 @@ import {
   Calculator,
   User as LucideUser,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  UploadCloud
 } from "lucide-react";
 import { UserRole, User, DoctorShift } from "../types";
 
@@ -359,6 +360,8 @@ export default function Staff() {
   const [isAddingShift, setIsAddingShift] = useState(false);
   const [editingShiftIndex, setEditingShiftIndex] = useState<number | null>(null);
   
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
+  
   const [sfName, setSfName] = useState("");
   const [sfSpecialty, setSfSpecialty] = useState("");
   const [sfRoom, setSfRoom] = useState("");
@@ -593,6 +596,23 @@ export default function Staff() {
     }
   };
 
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Safety alert: File is too large. Choose an image under 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setWizAvatarUrl(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSaveMemberEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
@@ -710,11 +730,11 @@ export default function Staff() {
 
   // Pre-designed top-quality physician profile pictures available for wizard selection
   const avatarPresets = [
-    { name: "Clinical Specialist 1", url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTps0OO8oAWRbrzOtvHKdziTYj5UqTM7fKITg&s" },
-    { name: `${currentUser?.name || "Practice Owner"} (Owner)`, url: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=150&q=80" },
-    { name: "Clinical Specialist 2", url: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=150&q=80" },
-    { name: "Administrative Staff", url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80" },
-    { name: "Clinical Specialist 3", url: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=150&q=80" }
+    { name: "Female Avatar 1", url: "https://api.dicebear.com/7.x/notionists/svg?seed=Lily&backgroundColor=b6e3f4" },
+    { name: "Female Avatar 2", url: "https://api.dicebear.com/7.x/notionists/svg?seed=Mia&backgroundColor=c0aede" },
+    { name: "Male Avatar 1", url: "https://api.dicebear.com/7.x/notionists/svg?seed=Jack&backgroundColor=ffdfbf" },
+    { name: "Male Avatar 2", url: "https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=d1d4f9" },
+    { name: "Neutral Avatar", url: "https://api.dicebear.com/7.x/notionists/svg?seed=Alex&backgroundColor=ffd5dc" }
   ];
 
   // Working schedule days options
@@ -1962,8 +1982,26 @@ export default function Staff() {
                     </div>
 
                     {/* MATRIX OF PRESETS */}
-                    <div className="space-y-2">
-                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Select Preset Photo</label>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] uppercase font-bold text-slate-500">Select Preset Photo</label>
+                        <button
+                          type="button"
+                          onClick={() => avatarFileInputRef.current?.click()}
+                          className="flex items-center gap-1.5 text-[10px] font-black uppercase text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+                        >
+                          <UploadCloud size={14} />
+                          <span>Upload from PC</span>
+                        </button>
+                        <input
+                          type="file"
+                          ref={avatarFileInputRef}
+                          onChange={handleAvatarUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                      </div>
+                      
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                         {avatarPresets.map((avatar) => {
                           const isSelected = wizAvatarUrl === avatar.url;
