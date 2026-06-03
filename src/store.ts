@@ -1,16 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { auth, db, handleFirestoreError, OperationType } from "./firebase";
-import { signOut, signInAnonymously } from "firebase/auth";
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  deleteDoc, 
-  onSnapshot,
-  disableNetwork,
-  enableNetwork
-} from "firebase/firestore";
+import { supabase } from "./supabase";
 import { 
   Patient, 
   Appointment, 
@@ -27,6 +17,54 @@ import {
   ClinicSettings
 } from "./types";
 
+// Operational types for structured error logging
+export enum OperationType {
+  CREATE = "create",
+  UPDATE = "update",
+  DELETE = "delete",
+  LIST = "list",
+  GET = "get",
+  WRITE = "write",
+}
+
+const toSnakeCase = (obj: any): any => {
+  if (Array.isArray(obj)) return obj.map(toSnakeCase);
+  if (obj === null || typeof obj !== "object" || obj instanceof Date) return obj;
+  return Object.keys(obj).reduce((acc, key) => {
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    acc[snakeKey] = toSnakeCase(obj[key]);
+    return acc;
+  }, {} as any);
+};
+
+const toCamelCase = (obj: any): any => {
+  if (Array.isArray(obj)) return obj.map(toCamelCase);
+  if (obj === null || typeof obj !== "object" || obj instanceof Date) return obj;
+  return Object.keys(obj).reduce((acc, key) => {
+    const camelKey = key.replace(/([-_][a-z])/g, group => group.toUpperCase().replace("-", "").replace("_", ""));
+    acc[camelKey] = toCamelCase(obj[key]);
+    return acc;
+  }, {} as any);
+};
+
+const TABLE_MAP: Record<string, string> = {
+  users: "profiles",
+  patients: "patients",
+  appointments: "appointments",
+  financialRecords: "financial_records",
+  inventory: "inventory_items",
+  activityLogs: "audit_logs",
+};
+
+const REVERSE_TABLE_MAP: Record<string, string> = {
+  profiles: "users",
+  patients: "patients",
+  appointments: "appointments",
+  financial_records: "financialRecords",
+  inventory_items: "inventory",
+  audit_logs: "activityLogs",
+};
+
 interface ClinicalState {
   currentUser: User | null;
   users: User[];
@@ -41,10 +79,10 @@ interface ClinicalState {
   setTheme: (theme: "light" | "dark") => void;
   setCurrentUser: (user: User | null) => void;
   
-  // Firestore Synchronization State & Handlers
+  // Supabase Synchronization State & Handlers
   isSyncActive: boolean;
-  startFirestoreSync: () => Promise<void>;
-  stopFirestoreSync: () => void;
+  startSupabaseSync: () => Promise<void>;
+  stopSupabaseSync: () => void;
   
   // Offline persistence and network status state
   isOnline: boolean;
@@ -159,30 +197,27 @@ const initialSettings: ClinicSettings = {
 const initialAppointments: Appointment[] = [];
 const initialFinancials: FinancialRecord[] = [];
 
-// Event-driven readiness system for Firestore
-let resolveFirestoreReady: () => void;
-let firestoreReadyPromise = new Promise<void>((resolve) => {
-  resolveFirestoreReady = resolve;
+// Event-driven readiness system for Supabase
+let resolveSupabaseReady: () => void;
+let supabaseReadyPromise = new Promise<void>((resolve) => {
+  resolveSupabaseReady = resolve;
 });
 
-const getFirestoreReady = () => firestoreReadyPromise;
+const getSupabaseReady = () => supabaseReadyPromise;
 
 const syncDoc = async (collectionName: string, id: string, data: any, op: OperationType) => {
-  if (!useStore.getState().isSyncActive) return;
+  if (!useStore.getState().isSyncActive || useStore.getState().offlineSimulated) return;
 
+  const table = TABLE_MAP[collectionName] || collectionName;
   try {
-    const docRef = doc(db, collectionName, id);
     if (op === OperationType.DELETE) {
-      await deleteDoc(docRef);
+      await supabase.from(table).delete().eq("id", id);
     } else {
-      await setDoc(docRef, data);
+      const snakeData = toSnakeCase(data);
+      await supabase.from(table).upsert(snakeData);
     }
   } catch (error) {
-    if (error instanceof Error && (error.message.includes("permission") || error.message.includes("PERMISSION_DENIED"))) {
-      handleFirestoreError(error, op, `${collectionName}/${id}`);
-    } else {
-      console.warn(`Firestore background sync (${op}) skipped:`, error);
-    }
+    console.warn(`Supabase background sync (${op}) failed for ${table}/${id}:`, error);
   }
 };
 
@@ -208,109 +243,76 @@ export const useStore = create<ClinicalState>()(
       
       toggleNetworkSimulation: async () => {
         const isCurrentlySimulated = get().offlineSimulated;
-        try {
-          if (isCurrentlySimulated) {
-            await enableNetwork(db);
-            set({ offlineSimulated: false, isOnline: typeof navigator !== "undefined" ? navigator.onLine : true });
-          } else {
-            await disableNetwork(db);
-            set({ offlineSimulated: true, isOnline: false });
-          }
-        } catch (err) {
-          console.error("Failed to toggle network state simulation:", err);
-        }
+        set({ 
+          offlineSimulated: !isCurrentlySimulated, 
+          isOnline: isCurrentlySimulated // If we are stopping simulation, assume online if it was offline
+        });
       },
       setCacheSizeLimitMB: (size) => set({ cacheSizeLimitMB: size }),
       
       isSyncActive: false,
-      startFirestoreSync: async () => {
+      startSupabaseSync: async () => {
         if (get().isSyncActive) return;
         set({ isSyncActive: true });
 
-        const unsubscribes: (() => void)[] = [];
+        const tables = Object.values(TABLE_MAP);
 
-        // Optimized Network Awareness
-        const handleOnline = () => { 
-          if (!get().offlineSimulated) {
-            set({ isOnline: true });
-            enableNetwork(db).catch(() => {});
-          }
-        };
-        const handleOffline = () => {
-          set({ isOnline: false });
-          disableNetwork(db).catch(() => {});
-        };
+        // Initial Hydration
+        try {
+          const results = await Promise.all(
+            tables.map(table => supabase.from(table).select("*"))
+          );
 
-        if (typeof window !== "undefined") {
-          window.addEventListener("online", handleOnline);
-          window.addEventListener("offline", handleOffline);
-          unsubscribes.push(() => {
-            window.removeEventListener("online", handleOnline);
-            window.removeEventListener("offline", handleOffline);
+          const newState: any = {};
+          results.forEach((res, index) => {
+            const table = tables[index];
+            const storeKey = REVERSE_TABLE_MAP[table];
+            if (res.data && storeKey) {
+              newState[storeKey] = toCamelCase(res.data);
+            }
           });
+          set(newState);
+          
+          if (resolveSupabaseReady) resolveSupabaseReady();
+        } catch (error) {
+          console.error("Supabase initial hydration failed:", error);
+          if (resolveSupabaseReady) resolveSupabaseReady();
         }
 
-        const collections = ["users", "patients", "appointments", "financialRecords", "inventory", "activityLogs"];
-        const seeds: Record<string, any[]> = {
-          users: initialUsers,
-          patients: initialPatients,
-          appointments: initialAppointments,
-          financialRecords: initialFinancials,
-          inventory: initialInventory,
-          activityLogs: initialLogs
-        };
+        // Realtime Subscription
+        const channel = supabase.channel("app-changes")
+          .on("postgres_changes", { event: "*", schema: "public" }, (payload) => {
+            const table = payload.table;
+            const storeKey = REVERSE_TABLE_MAP[table];
+            if (!storeKey) return;
 
-        // Parallel Real-time Synchronization
-        collections.forEach(col => {
-          const unsub = onSnapshot(collection(db, col), { includeMetadataChanges: true }, 
-            (snapshot) => {
-              if (snapshot.empty && seeds[col].length > 0) {
-                seeds[col].forEach(item => setDoc(doc(db, col, item.id), item).catch(() => {}));
-              } else {
-                const list: any[] = [];
-                snapshot.forEach(doc => list.push(doc.data()));
-                set({ [col]: list } as any);
+            set((state: any) => {
+              const currentList = state[storeKey] || [];
+              
+              if (payload.eventType === "INSERT") {
+                const newData = toCamelCase(payload.new);
+                return { [storeKey]: [newData, ...currentList] };
+              } else if (payload.eventType === "UPDATE") {
+                const newData = toCamelCase(payload.new);
+                return { [storeKey]: currentList.map((item: any) => item.id === newData.id ? newData : item) };
+              } else if (payload.eventType === "DELETE") {
+                const oldId = payload.old.id;
+                return { [storeKey]: currentList.filter((item: any) => item.id !== oldId) };
               }
-              // Resolve readiness promise when the critical 'users' collection is initialized
-              if (col === "users") {
-                if (resolveFirestoreReady) resolveFirestoreReady();
-              }
-            },
-            (error) => {
-              console.error(`Firestore permission denied on ${col}. Are rules deployed?`, error);
-              // UNBLOCK UI EVEN IF DATABASE REJECTS US
-              if (col === "users") {
-                if (resolveFirestoreReady) resolveFirestoreReady(); 
-              }
-            }
-          );
-          unsubscribes.push(unsub);
-        });
+              return state;
+            });
+          })
+          .subscribe();
 
-        // Clinic Settings Sync
-        const unsubSettings = onSnapshot(doc(db, "clinicSettings", "global"), 
-          (snapshot) => {
-            if (!snapshot.exists()) {
-              setDoc(doc(db, "clinicSettings", "global"), initialSettings).catch(() => {});
-            } else {
-              set({ clinicSettings: snapshot.data() as ClinicSettings });
-            }
-          },
-          (error) => {
-            console.error("Clinic settings permission denied.", error);
-          }
-        );
-        unsubscribes.push(unsubSettings);
-
-        (window as any).__firestoreUnsubs = unsubscribes;
+        (window as any).__supabaseChannel = channel;
       },
-      stopFirestoreSync: () => {
+      stopSupabaseSync: () => {
         if (!get().isSyncActive) return;
         set({ isSyncActive: false });
-        const unsubs = (window as any).__firestoreUnsubs;
-        if (Array.isArray(unsubs)) {
-          unsubs.forEach((unsub: any) => { try { unsub(); } catch (e) {} });
-          (window as any).__firestoreUnsubs = undefined;
+        const channel = (window as any).__supabaseChannel;
+        if (channel) {
+          supabase.removeChannel(channel);
+          (window as any).__supabaseChannel = undefined;
         }
       },
       
@@ -319,41 +321,58 @@ export const useStore = create<ClinicalState>()(
         
         // Step 1: Ensure sync is active and await the readiness promise
         if (!get().isSyncActive) {
-          await get().startFirestoreSync();
+          await get().startSupabaseSync();
         }
 
-        // Block login evaluation until the users collection has been definitively synced
-        await getFirestoreReady();
+        // Block login evaluation until initial hydration has been definitively synced
+        await getSupabaseReady();
 
-        let found = get().users.find(u => u.username.toLowerCase() === uLower && u.role === role && u.isActive);
-        
-        // Day 0 Bootstrap Check
-        if (!found && (uLower === "owner" || uLower === "admin") && password === "owner123" && role === "admin") {
-            const newAdmin: User = {
-                id: "usr-1",
-                name: "System Owner",
-                username: "admin", // Match the Master Key UI fallback
-                role: "admin",
-                isActive: true,
-                password: "owner123"
-            };
-            await setDoc(doc(db, "users", newAdmin.id), newAdmin).catch(e => console.warn("Bootstrap sync failed, but allowing local login", e));
-            found = newAdmin;
+        // Step 2: Resolve email from username via profiles table
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("email, id")
+          .eq("username", uLower)
+          .single();
+
+        if (profileError || !profileData?.email) {
+          // Check for legacy bootstrap credentials if DB is empty or user not found
+          if ((uLower === "owner" || uLower === "admin") && password === "owner123" && role === "admin") {
+            // In a real migration, we'd expect the user to already exist in Supabase Auth
+            // but for this prototype migration, we allow the check.
+            const found = get().users.find(u => u.username.toLowerCase() === uLower && u.role === role);
+            if (found) {
+              set({ currentUser: found });
+              return true;
+            }
+          }
+          return false;
         }
 
-        if (!found) return false;
+        // Step 3: Supabase Auth Sign In
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email: profileData.email,
+          password
+        });
+
+        if (authError || !authData.user) {
+          console.error("Supabase Auth error:", authError?.message);
+          return false;
+        }
+
+        // Step 4: Set current user from our users state (hydrated from profiles)
+        const found = get().users.find(u => u.id === authData.user.id);
+        if (found) {
+          set({ currentUser: found });
+          return true;
+        }
         
-        // Step 2: Password verification (Legacy custom password system)
-        if (found.password && found.password !== password) return false;
-        
-        set({ currentUser: found });
-        return true;
+        return false;
       },
       
-      logout: () => {
-        get().stopFirestoreSync();
+      logout: async () => {
+        get().stopSupabaseSync();
         set({ currentUser: null });
-        signOut(auth).catch(() => {});
+        await supabase.auth.signOut();
       },
 
       registerStaff: (name, username, role, email = "", phone = "", _password = "", avatarUrl = "", specialty = "", assignedRoom = "", days = [], hours = "", role2?: UserRole, gender?: "Male" | "Female", doctorId?: string) => {
@@ -637,9 +656,9 @@ export const useStore = create<ClinicalState>()(
 // INITIALIZATION: Start background sync to ensure users/credentials are available
 // even before the first login attempt on a new device.
 if (typeof window !== "undefined") {
-  // Use a small delay to ensure Firebase is fully initialized
+  // Use a small delay to ensure Supabase is fully initialized
   setTimeout(() => {
-    useStore.getState().startFirestoreSync();
+    useStore.getState().startSupabaseSync();
   }, 500);
 }
 
