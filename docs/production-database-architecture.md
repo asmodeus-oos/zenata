@@ -368,7 +368,7 @@ CREATE TABLE audit_logs (
 
 ## 9. Future Sync Support (Outbox Pattern)
 
-To sync the local source-of-truth with Firebase/Supabase later without locking the main thread:
+To sync the local source-of-truth with Supabase later without locking the main thread:
 
 1. **`sync_status`** column on all tables.
 2. **`outbox_events` Table**: Triggers insert a lightweight event here when a row changes.

@@ -5,18 +5,17 @@
 React UI (presentation + UX state only)
   -> Domain Services (`src/services/*`)
   -> API Client (`src/api/backendClient.ts`)
-  -> Cloud Functions (`functions/src/index.ts`)
-  -> Firestore (storage only, no direct client writes to protected collections)
+  -> Supabase (storage only, no direct client writes to protected tables)
   -> Append-only `auditLogs`, `ledgerEntries`, `stockMovements`
 
 ## Security Model
 
 - Authentication required for all protected reads/writes.
-- Role-based access is enforced in backend callable functions:
+- Role-based access is enforced in Postgres RLS and Edge Functions:
   - `admin`, `doctor`, `receptionist`, `accountant`.
-- Firestore rules deny direct client writes for:
+- Supabase Policies (RLS) deny direct client writes for:
   - `patients`, `appointments`, `ledgerEntries`, `stockMovements`, `auditLogs`, `users`.
-- App Check initialization added in frontend (`VITE_RECAPTCHA_SITE_KEY`).
+- App Check initialization replaced with Supabase Auth protection.
 - Legacy client-side password bypass paths removed/disabled in the UI and store.
 
 ## Financial Correctness Model
@@ -25,7 +24,7 @@ React UI (presentation + UX state only)
   - `payment`, `refund`, `charge`, `adjustment`.
 - No in-place mutation of ledger rows.
 - Patient balances must be derived by aggregation, never edited directly.
-- Backend function `createLedgerEntry` validates positive amount and writes audit event.
+- Database Trigger validates positive amount and writes audit event.
 
 ## Patient Data Safety Model
 
@@ -38,14 +37,14 @@ React UI (presentation + UX state only)
 - Event-based stock movements introduced (`StockMovement`):
   - `add`, `consume`, `adjust`.
 - Inventory state should be derived from movement aggregation.
-- Backend function `adjustStock` records immutable movement events.
+- Database Function `adjustStock` records immutable movement events.
 
 ## Removed / Disabled Insecure Patterns
 
 - Hardcoded emergency bypass in login path removed.
 - Anonymous sign-in credential fallback removed from `store.login`.
 - Client-side password reset logic disabled.
-- Firestore rules no longer allow direct client writes to financial/clinical collections.
+- Supabase Policies no longer allow direct client writes to financial/clinical tables.
 
 ## Remaining Migration Work
 

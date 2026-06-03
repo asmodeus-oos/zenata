@@ -74,14 +74,14 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
         if (session?.user) {
-          const firebaseUser = session.user;
-          const email = firebaseUser.email || "";
-          const name = firebaseUser.user_metadata?.name || email.split("@")[0] || "Practitioner";
+          const supabaseUser = session.user;
+          const email = supabaseUser.email || "";
+          const name = supabaseUser.user_metadata?.name || email.split("@")[0] || "Practitioner";
           let found = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
           
           if (!found) {
             // Auto register this Supabase practitioner into the staff list
-            const rawId = firebaseUser.id;
+            const rawId = supabaseUser.id;
             const newU = {
               id: rawId,
               name,
@@ -89,7 +89,7 @@ export default function App() {
               role: "clinician" as const,
               isActive: true,
               email,
-              avatarUrl: firebaseUser.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&w=150&q=80",
+              avatarUrl: supabaseUser.user_metadata?.avatar_url || "https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&w=150&q=80",
               specialty: "Clinical Specialist (Supabase)",
               days: ["Monday", "Wednesday", "Friday"],
               hours: "09:00 AM - 05:00 PM"
