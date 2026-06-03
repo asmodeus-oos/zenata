@@ -158,24 +158,6 @@ const initialAppointments: Appointment[] = [];
 const initialFinancials: FinancialRecord[] = [];
 
 const syncDoc = async (collectionName: string, id: string, data: any, op: OperationType) => {
-  const backendOnlyCollections = new Set([
-    "patients",
-    "appointments",
-    "financialRecords",
-    "ledgerEntries",
-    "stockMovements",
-    "inventory",
-    "users",
-    "auditLogs",
-  ]);
-
-  if (backendOnlyCollections.has(collectionName)) {
-    console.warn(
-      `[Firestore Sync] Blocked client direct write (${op}) for ${collectionName}/${id}. Use backend callable functions instead.`,
-    );
-    return;
-  }
-
   if (!auth.currentUser) return;
   if (!useStore.getState().isSyncActive) return;
 
