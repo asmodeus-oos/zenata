@@ -1,39 +1,39 @@
 {
   "pages": {
     "/_not-found/page": [
-      "static/chunks/webpack-da0e62ba882b1643.js",
+      "static/chunks/webpack-4b4c988d1432d153.js",
       "static/chunks/4bd1b696-6c6e7edadeb5dc4a.js",
       "static/chunks/587-068c880f157ff151.js",
       "static/chunks/main-app-62ba29b000703326.js",
       "static/chunks/app/_not-found/page-cb7dca9199922724.js"
     ],
     "/layout": [
-      "static/chunks/webpack-da0e62ba882b1643.js",
+      "static/chunks/webpack-4b4c988d1432d153.js",
       "static/chunks/4bd1b696-6c6e7edadeb5dc4a.js",
       "static/chunks/587-068c880f157ff151.js",
       "static/chunks/main-app-62ba29b000703326.js",
-      "static/css/1e780f9bf18fb063.css",
-      "static/css/1df1a954914f8ae0.css",
-      "static/chunks/app/layout-f777177e93b8ee54.js"
+      "static/css/c01e73ebaa3b58ec.css",
+      "static/css/0f2a6c5e80382169.css",
+      "static/chunks/app/layout-c30aaa340774c97b.js"
     ],
     "/login/page": [
-      "static/chunks/webpack-da0e62ba882b1643.js",
+      "static/chunks/webpack-4b4c988d1432d153.js",
       "static/chunks/4bd1b696-6c6e7edadeb5dc4a.js",
       "static/chunks/587-068c880f157ff151.js",
       "static/chunks/main-app-62ba29b000703326.js",
       "static/chunks/app/login/page-379cecaa00c703c9.js"
     ],
     "/(dashboard)/layout": [
-      "static/chunks/webpack-da0e62ba882b1643.js",
+      "static/chunks/webpack-4b4c988d1432d153.js",
       "static/chunks/4bd1b696-6c6e7edadeb5dc4a.js",
       "static/chunks/587-068c880f157ff151.js",
       "static/chunks/main-app-62ba29b000703326.js",
       "static/chunks/44530001-b3ac682726999457.js",
       "static/chunks/785-d426f9b125cd070e.js",
-      "static/chunks/app/(dashboard)/layout-68f58a974b26fd3d.js"
+      "static/chunks/app/(dashboard)/layout-14bcbcc09ab37954.js"
     ],
     "/(dashboard)/page": [
-      "static/chunks/webpack-da0e62ba882b1643.js",
+      "static/chunks/webpack-4b4c988d1432d153.js",
       "static/chunks/4bd1b696-6c6e7edadeb5dc4a.js",
       "static/chunks/587-068c880f157ff151.js",
       "static/chunks/main-app-62ba29b000703326.js",
