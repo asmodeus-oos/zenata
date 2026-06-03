@@ -159,6 +159,19 @@ const initialSettings: ClinicSettings = {
 const initialAppointments: Appointment[] = [];
 const initialFinancials: FinancialRecord[] = [];
 
+// Event-driven readiness system for Firestore
+let firestoreReadyPromise: Promise<void> | null = null;
+let resolveFirestoreReady: (() => void) | null = null;
+
+const getFirestoreReady = () => {
+  if (!firestoreReadyPromise) {
+    firestoreReadyPromise = new Promise((resolve) => {
+      resolveFirestoreReady = resolve;
+    });
+  }
+  return firestoreReadyPromise;
+};
+
 const syncDoc = async (collectionName: string, id: string, data: any, op: OperationType) => {
   // Allow sync if we have ANY auth state (including anonymous)
   if (!auth.currentUser) {
@@ -282,6 +295,10 @@ export const useStore = create<ClinicalState>()(
               snapshot.forEach(doc => list.push(doc.data()));
               set({ [col]: list } as any);
             }
+            // Resolve readiness promise when the critical 'users' collection is initialized
+            if (col === "users") {
+              if (resolveFirestoreReady) resolveFirestoreReady();
+            }
           });
           unsubscribes.push(unsub);
         });
@@ -309,23 +326,25 @@ export const useStore = create<ClinicalState>()(
       },
       
       login: async (username, password, role) => {
-        // Step 1: Ensure sync is active to get latest users from cloud
+        const uLower = username.toLowerCase();
+        
+        // Step 1: Ensure sync is active and await the readiness promise
         if (!get().isSyncActive) {
           await get().startFirestoreSync();
-          // Small wait for first snapshot if on fresh device
-          await new Promise(r => setTimeout(r, 1000));
         }
 
-        const uLower = username.toLowerCase();
+        // Block login evaluation until the users collection has been definitively synced
+        await getFirestoreReady();
+
         let found = get().users.find(u => u.username.toLowerCase() === uLower && u.role === role && u.isActive);
         
+        // Step 2: Fallback - if still not found in snapshot, the snapshot might be filtered or delayed.
         if (!found) return false;
         
-        // Step 2: Password verification (Legacy custom password system)
+        // Step 3: Password verification
         if (found.password && found.password !== password) return false;
         
-        // Step 3: System Bootstrap - If this is the "Owner" logging in for the first time 
-        // on a device that HAS it locally but Firestore is empty, force push.
+        // Step 4: System Bootstrap - Push owner record if it exists locally but cloud was empty
         if (found.id === "usr-1" || found.role === "admin") {
            syncDoc("users", found.id, found, OperationType.UPDATE);
         }
