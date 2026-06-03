@@ -1745,27 +1745,46 @@ export default function Staff() {
                       <Clock size={14} /> Schedule & Roster
                     </h4>
                     
-                    <div className="space-y-2.5">
-                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Standard Shift Duty Hours</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {[
-                          "08:00 AM - 04:00 PM",
-                          "09:00 AM - 05:00 PM",
-                          "10:00 AM - 06:00 PM"
-                        ].map((shift) => (
-                          <button
-                            key={shift}
-                            type="button"
-                            onClick={() => setWizHours(shift)}
-                            className={`p-3 rounded-xl border text-[13px] font-bold transition-all cursor-pointer shadow-3xs ${
-                              wizHours === shift 
-                                ? "bg-slate-900 text-white border-slate-900"
-                                : "bg-white border-slate-200/60 hover:bg-slate-50 text-slate-700"
-                            }`}
-                          >
-                            {shift}
+                    {/* Custom Time Picker */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Shift Start Time (From)</label>
+                        <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200/60 shadow-3xs">
+                          <div className="flex flex-col items-center">
+                            <button type="button" onClick={() => setWizFromHour(incrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
+                            <input ref={wizFromHourRefCallback} type="text" value={wizFromHour} onChange={(e) => handleHourChange(e.target.value, setWizFromHour)} onBlur={() => handleHourBlur(wizFromHour, setWizFromHour, "09")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                            <button type="button" onClick={() => setWizFromHour(decrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                          </div>
+                          <span className="text-slate-300 font-black text-sm">:</span>
+                          <div className="flex flex-col items-center">
+                            <button type="button" onClick={() => setWizFromMinute(incrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
+                            <input ref={wizFromMinRefCallback} type="text" value={wizFromMinute} onChange={(e) => handleMinuteChange(e.target.value, setWizFromMinute)} onBlur={() => handleMinuteBlur(wizFromMinute, setWizFromMinute, "00")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                            <button type="button" onClick={() => setWizFromMinute(decrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                          </div>
+                          <button type="button" onClick={() => setWizFromAmpm(wizFromAmpm === "AM" ? "PM" : "AM")} className="ml-auto px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black uppercase rounded-lg transition-colors cursor-pointer">
+                            {wizFromAmpm}
                           </button>
-                        ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Shift End Time (To)</label>
+                        <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200/60 shadow-3xs">
+                          <div className="flex flex-col items-center">
+                            <button type="button" onClick={() => setWizToHour(incrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
+                            <input ref={wizToHourRefCallback} type="text" value={wizToHour} onChange={(e) => handleHourChange(e.target.value, setWizToHour)} onBlur={() => handleHourBlur(wizToHour, setWizToHour, "05")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                            <button type="button" onClick={() => setWizToHour(decrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                          </div>
+                          <span className="text-slate-300 font-black text-sm">:</span>
+                          <div className="flex flex-col items-center">
+                            <button type="button" onClick={() => setWizToMinute(incrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
+                            <input ref={wizToMinRefCallback} type="text" value={wizToMinute} onChange={(e) => handleMinuteChange(e.target.value, setWizToMinute)} onBlur={() => handleMinuteBlur(wizToMinute, setWizToMinute, "00")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                            <button type="button" onClick={() => setWizToMinute(decrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                          </div>
+                          <button type="button" onClick={() => setWizToAmpm(wizToAmpm === "AM" ? "PM" : "AM")} className="ml-auto px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black uppercase rounded-lg transition-colors cursor-pointer">
+                            {wizToAmpm}
+                          </button>
+                        </div>
                       </div>
                     </div>
 
