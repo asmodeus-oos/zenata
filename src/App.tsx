@@ -36,6 +36,9 @@ export default function App() {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
+  // Check for missing Supabase config
+  const isConfigMissing = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY;
+
   // Welcome Screen state
   const [showWelcome, setShowWelcome] = useState(false);
   const [lastWelcomeUserId, setLastWelcomeUserId] = useState<string | null>(null);
