@@ -14,12 +14,15 @@ async function main() {
     { name: 'Accountant', description: 'Financial management' }
   ];
 
+  const roleMap: Record<string, string> = {};
+
   for (const role of roles) {
-    await prisma.role.upsert({
+    const createdRole = await prisma.role.upsert({
       where: { name: role.name },
       update: {},
       create: role,
     });
+    roleMap[role.name] = createdRole.id;
   }
 
   console.log('✅ Basic roles created.');
@@ -45,7 +48,45 @@ async function main() {
   }
 
   console.log('✅ System permissions defined.');
-  console.log('🌱 Seeding complete. You can now link a user to the Owner role via Dashboard.');
+
+  // 3. Provision the Initial Owner User
+  const ownerAuthId = "a6893db7-6a74-4392-9feb-e1845e2465d7";
+  const ownerEmail = "owner@zendenta.com";
+
+  console.log(`👤 Provisioning owner: ${ownerEmail}...`);
+
+  const user = await prisma.user.upsert({
+    where: { authId: ownerAuthId },
+    update: {
+      email: ownerEmail,
+      isActive: true,
+    },
+    create: {
+      authId: ownerAuthId,
+      email: ownerEmail,
+      name: 'System Owner',
+      username: 'owner',
+      isActive: true,
+    },
+  });
+
+  // Link to Owner role
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: user.id,
+        roleId: roleMap['Owner'],
+      }
+    },
+    update: {},
+    create: {
+      userId: user.id,
+      roleId: roleMap['Owner'],
+    }
+  });
+
+  console.log('✅ Owner account provisioned and linked to role.');
+  console.log('🌱 Seeding complete. You can now log in.');
 }
 
 main()
