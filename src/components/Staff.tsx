@@ -32,7 +32,13 @@ import {
   UserCheck,
   Trash2,
   AlertTriangle,
-  MapPin
+  MapPin,
+  Phone,
+  Stethoscope,
+  Calculator,
+  User,
+  ChevronDown,
+  ExternalLink
 } from "lucide-react";
 import { UserRole, User, DoctorShift } from "../types";
 
