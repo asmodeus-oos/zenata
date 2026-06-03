@@ -85,7 +85,7 @@ export default function Staff() {
   const [wizardStep, setWizardStep] = useState(1);
   const [wizName, setWizName] = useState("");
   const [wizUsername, setWizUsername] = useState("");
-  const [wizRole, setWizRole] = useState<UserRole>("clinician");
+  const [wizRole, setWizRole] = useState<UserRole>("user");
   const [wizRole2, setWizRole2] = useState<"none" | UserRole>("none");
   const [wizEmail, setWizEmail] = useState("");
   const [wizPhone, setWizPhone] = useState("");
@@ -95,6 +95,14 @@ export default function Staff() {
   const [wizHours, setWizHours] = useState("09:00 AM - 05:00 PM");
   const [wizDays, setWizDays] = useState<string[]>(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]);
   const [wizAvatarUrl, setWizAvatarUrl] = useState("https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&w=150&q=80"); // default to Clara
+
+  // States for wizard's custom time picker
+  const [wizFromHour, setWizFromHour] = useState("09");
+  const [wizFromMinute, setWizFromMinute] = useState("00");
+  const [wizFromAmpm, setWizFromAmpm] = useState("AM");
+  const [wizToHour, setWizToHour] = useState("05");
+  const [wizToMinute, setWizToMinute] = useState("00");
+  const [wizToAmpm, setWizToAmpm] = useState("PM");
 
   // Admin Managing other member details state
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -263,6 +271,35 @@ export default function Staff() {
     }
   }, []);
 
+  const wizFromHourRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (node) {
+      const handleWheel = (e: WheelEvent) => { e.preventDefault(); setWizFromHour(e.deltaY < 0 ? incrementHourFunc : decrementHourFunc); };
+      node.addEventListener("wheel", handleWheel, { passive: false });
+      return () => node.removeEventListener("wheel", handleWheel);
+    }
+  }, []);
+  const wizFromMinRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (node) {
+      const handleWheel = (e: WheelEvent) => { e.preventDefault(); setWizFromMinute(e.deltaY < 0 ? incrementMinuteFunc : decrementMinuteFunc); };
+      node.addEventListener("wheel", handleWheel, { passive: false });
+      return () => node.removeEventListener("wheel", handleWheel);
+    }
+  }, []);
+  const wizToHourRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (node) {
+      const handleWheel = (e: WheelEvent) => { e.preventDefault(); setWizToHour(e.deltaY < 0 ? incrementHourFunc : decrementHourFunc); };
+      node.addEventListener("wheel", handleWheel, { passive: false });
+      return () => node.removeEventListener("wheel", handleWheel);
+    }
+  }, []);
+  const wizToMinRefCallback = useCallback((node: HTMLInputElement | null) => {
+    if (node) {
+      const handleWheel = (e: WheelEvent) => { e.preventDefault(); setWizToMinute(e.deltaY < 0 ? incrementMinuteFunc : decrementMinuteFunc); };
+      node.addEventListener("wheel", handleWheel, { passive: false });
+      return () => node.removeEventListener("wheel", handleWheel);
+    }
+  }, []);
+
   React.useEffect(() => {
     setEditHours(`${fromHour}:${fromMinute} ${fromAmpm} - ${toHour}:${toMinute} ${toAmpm}`);
   }, [fromHour, fromMinute, fromAmpm, toHour, toMinute, toAmpm]);
@@ -413,6 +450,8 @@ export default function Staff() {
       return;
     }
 
+    const combinedWizHours = `${wizFromHour}:${wizFromMinute} ${wizFromAmpm} - ${wizToHour}:${wizToMinute} ${wizToAmpm}`;
+
     registerStaff(
       wizName,
       wizUsername,
@@ -424,13 +463,14 @@ export default function Staff() {
       wizSpecialty || (wizRole === "clinician" ? "Dentist Specialist" : wizRole === "admin" ? "Practice Admin" : "Receptionist Office Clerk"),
       wizRoom,
       wizDays,
-      wizHours,
+      combinedWizHours,
       wizRole2 === "none" ? undefined : wizRole2
     );
 
     // Reset onboarding form
     setWizName("");
     setWizUsername("");
+    setWizRole("user");
     setWizRole2("none");
     setWizEmail("");
     setWizPhone("");
@@ -438,6 +478,12 @@ export default function Staff() {
     setWizSpecialty("");
     setWizDays(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]);
     setWizHours("09:00 AM - 05:00 PM");
+    setWizFromHour("09");
+    setWizFromMinute("00");
+    setWizFromAmpm("AM");
+    setWizToHour("05");
+    setWizToMinute("00");
+    setWizToAmpm("PM");
     setWizardStep(1);
     setActiveTab("directory");
 
@@ -1541,18 +1587,15 @@ export default function Staff() {
 
                   <div className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-6 shadow-inner space-y-5">
                     <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mb-2">
-                      <Shield size={14} /> Access Levels
+                      <Shield size={14} /> Access Levels & Role
                     </h4>
+                    
                     <div className="space-y-2">
                       <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Primary System Access Level</label>
-                      <div className="grid grid-cols-2 lg:grid-cols-6 gap-2">
+                      <div className="grid grid-cols-2 lg:grid-cols-2 gap-2">
                         {[
-                          { val: "clinician", label: "Dentist" },
-                          { val: "doctor", label: "Doctor" },
-                          { val: "frontdesk", label: "Front Desk" },
-                          { val: "receptionist", label: "Reception" },
-                          { val: "accountant", label: "Accounting" },
-                          { val: "admin", label: "Admin" }
+                          { val: "user", label: "Standard User" },
+                          { val: "admin", label: "Administrator" }
                         ].map(r => (
                           <label 
                             key={r.val} 
@@ -1576,23 +1619,36 @@ export default function Staff() {
                       </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Optional Secondary Role</label>
-                      <div className="relative">
-                        <select
-                          value={wizRole2}
-                          onChange={(e) => setWizRole2(e.target.value as "none" | UserRole)}
-                          className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
-                        >
-                          <option value="none">No Secondary Role (Single Role)</option>
-                          <option value="clinician">Clinical Dentist</option>
-                          <option value="doctor">Medical Doctor</option>
-                          <option value="frontdesk">Front Desk Clerk</option>
-                          <option value="receptionist">Receptionist Officer</option>
-                          <option value="accountant">Financial Accountant</option>
-                          <option value="admin">System Administrator Override</option>
-                        </select>
-                        <ChevronDown size={14} className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
+                    <div className="space-y-2 pt-2 border-t border-slate-100/60">
+                      <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Occupation (Optional Secondary Role)</label>
+                      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
+                        {[
+                          { val: "none", label: "None" },
+                          { val: "clinician", label: "Dentist" },
+                          { val: "doctor", label: "Doctor" },
+                          { val: "frontdesk", label: "Front Desk" },
+                          { val: "receptionist", label: "Reception" },
+                          { val: "accountant", label: "Accounting" }
+                        ].map(r => (
+                          <label 
+                            key={r.val} 
+                            className={`p-3 border rounded-xl flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all ${
+                              wizRole2 === r.val 
+                                ? "bg-blue-600 text-white border-blue-600 shadow-md scale-[1.02]" 
+                                : "bg-white border-slate-200/60 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="wizRole2"
+                              value={r.val}
+                              checked={wizRole2 === r.val}
+                              onChange={() => setWizRole2(r.val as "none" | UserRole)}
+                              className="sr-only"
+                            />
+                            <span className="text-[11px] font-bold">{r.label}</span>
+                          </label>
+                        ))}
                       </div>
                     </div>
                   </div>
