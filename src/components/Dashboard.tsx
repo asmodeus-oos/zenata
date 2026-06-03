@@ -620,7 +620,7 @@ export default function Dashboard({ onSwitchTab, onSelectPatient }: DashboardPro
                 <Activity size={18} className="text-blue-500 animate-pulse" />
                 <span>Recent Activity</span>
               </h3>
-              <select
+              <PremiumSelect
                 id="activity-type-filter"
                 value={activityFilter}
                 onChange={(e) => setActivityFilter(e.target.value as any)}
@@ -630,7 +630,7 @@ export default function Dashboard({ onSwitchTab, onSelectPatient }: DashboardPro
                 <option value="Filling">Filling</option>
                 <option value="Extraction">Extraction</option>
                 <option value="Prosthetic">Prosthetic</option>
-              </select>
+              </PremiumSelect>
             </div>
             <p className="text-xs text-slate-400 mb-4 font-medium">
               Latest {activityFilter === "all" ? "5" : ""} completed {activityFilter !== "all" ? activityFilter.toLowerCase() : ""} interventions
@@ -703,6 +703,11 @@ export default function Dashboard({ onSwitchTab, onSelectPatient }: DashboardPro
             Procedure logs are populated live upon operational completion.
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+</div>
       </div>
     </div>
   );
