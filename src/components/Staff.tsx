@@ -751,10 +751,18 @@ export default function Staff() {
   });
 
   const isStepValid = () => {
-    if (wizardStep === 1) return wizName.trim() !== "" && wizUsername.trim() !== "" && wizDoctorId.length === 16;
-    if (wizardStep === 2) return true;
-    if (wizardStep === 3) return wizDays.length > 0;
-    if (wizardStep === 4) return true;
+    if (wizardStep === 1) {
+      const basicInfo = wizName.trim() !== "" && wizUsername.trim() !== "";
+      const idInfo = wizDoctorId.length === 16;
+      const occupationInfo = wizRole2 !== "none"; // Occupation is mandatory
+      return basicInfo && idInfo && occupationInfo;
+    }
+    if (wizardStep === 2) {
+      return wizPhone.trim() !== "" && wizEmail.trim() !== "" && wizRoom !== "";
+    }
+    if (wizardStep === 3) {
+      return wizDays.length > 0;
+    }
     return true;
   };
 
@@ -1742,8 +1750,8 @@ export default function Staff() {
                           { val: "clinician", label: "Dentist" },
                           { val: "doctor", label: "Doctor" },
                           { val: "frontdesk", label: "Front Desk" },
-                          { val: "receptionist", label: "Reception" },
-                          { val: "accountant", label: "Accounting" }
+                          { val: "receptionist", label: "Receptionist" },
+                          { val: "accountant", label: "Accountant" }
                         ].map(r => (
                           <label 
                             key={r.val} 
@@ -1786,9 +1794,10 @@ export default function Staff() {
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Telephone Number</label>
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Telephone Number <strong className="text-rose-500">*</strong></label>
                         <input
                           type="text"
+                          required
                           placeholder="E.g., +1 (555) 555-0199"
                           value={wizPhone}
                           onChange={(e) => setWizPhone(e.target.value)}
@@ -1796,9 +1805,10 @@ export default function Staff() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Practice Email</label>
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Practice Email <strong className="text-rose-500">*</strong></label>
                         <input
                           type="email"
+                          required
                           placeholder="E.g., doctor@zendenta.com"
                           value={wizEmail}
                           onChange={(e) => setWizEmail(e.target.value)}
@@ -1825,14 +1835,15 @@ export default function Staff() {
                         <span className="text-[9px] text-slate-400 ml-1">* Leave empty to dynamically generate based on role</span>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Physical Room</label>
+                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Physical Room <strong className="text-rose-500">*</strong></label>
                         <div className="relative">
                           <select
+                            required
                             value={wizRoom}
                             onChange={(e) => setWizRoom(e.target.value)}
                             className="w-full px-4 py-3 bg-white border border-slate-200/60 rounded-xl text-[13px] text-slate-800 font-semibold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none shadow-3xs appearance-none cursor-pointer"
                           >
-                            <option value="">No room assigned</option>
+                            <option value="">-- Assign Room --</option>
                             {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
                               <option key={num} value={`Room ${num}`}>Room {num}</option>
                             ))}
@@ -1860,52 +1871,54 @@ export default function Staff() {
                       <Clock size={14} /> Schedule & Roster
                     </h4>
                     
-                    {/* Custom Time Picker */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Shift Start Time (From)</label>
-                        <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200/60 shadow-3xs">
+                    {/* Compact Time Picker Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* FROM PICKER */}
+                      <div className="bg-white border border-slate-200/60 rounded-2xl p-4 shadow-sm">
+                        <label className="text-[9px] uppercase font-black text-slate-400 tracking-widest mb-3 block">Shift Start (From)</label>
+                        <div className="flex items-center gap-2 bg-slate-50/50 p-2.5 rounded-xl border border-slate-100">
                           <div className="flex flex-col items-center">
-                            <button type="button" onClick={() => setWizFromHour(incrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
-                            <input ref={wizFromHourRefCallback} type="text" value={wizFromHour} onChange={(e) => handleHourChange(e.target.value, setWizFromHour)} onBlur={() => handleHourBlur(wizFromHour, setWizFromHour, "09")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
-                            <button type="button" onClick={() => setWizFromHour(decrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                            <button type="button" onClick={() => setWizFromHour(incrementHourFunc)} className="text-slate-300 hover:text-slate-600 p-0.5 cursor-pointer transition-colors">▲</button>
+                            <input ref={wizFromHourRefCallback} type="text" value={wizFromHour} onChange={(e) => handleHourChange(e.target.value, setWizFromHour)} onBlur={() => handleHourBlur(wizFromHour, setWizFromHour, "09")} className="w-10 text-center text-lg font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                            <button type="button" onClick={() => setWizFromHour(decrementHourFunc)} className="text-slate-300 hover:text-slate-600 p-0.5 cursor-pointer transition-colors">▼</button>
                           </div>
-                          <span className="text-slate-300 font-black text-sm">:</span>
+                          <span className="text-slate-300 font-black text-lg mb-1">:</span>
                           <div className="flex flex-col items-center">
-                            <button type="button" onClick={() => setWizFromMinute(incrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
-                            <input ref={wizFromMinRefCallback} type="text" value={wizFromMinute} onChange={(e) => handleMinuteChange(e.target.value, setWizFromMinute)} onBlur={() => handleMinuteBlur(wizFromMinute, setWizFromMinute, "00")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
-                            <button type="button" onClick={() => setWizFromMinute(decrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                            <button type="button" onClick={() => setWizFromMinute(incrementMinuteFunc)} className="text-slate-300 hover:text-slate-600 p-0.5 cursor-pointer transition-colors">▲</button>
+                            <input ref={wizFromMinRefCallback} type="text" value={wizFromMinute} onChange={(e) => handleMinuteChange(e.target.value, setWizFromMinute)} onBlur={() => handleMinuteBlur(wizFromMinute, setWizFromMinute, "00")} className="w-10 text-center text-lg font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                            <button type="button" onClick={() => setWizFromMinute(decrementMinuteFunc)} className="text-slate-300 hover:text-slate-600 p-0.5 cursor-pointer transition-colors">▼</button>
                           </div>
-                          <button type="button" onClick={() => setWizFromAmpm(wizFromAmpm === "AM" ? "PM" : "AM")} className="ml-auto px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black uppercase rounded-lg transition-colors cursor-pointer">
+                          <button type="button" onClick={() => setWizFromAmpm(wizFromAmpm === "AM" ? "PM" : "AM")} className="ml-auto px-4 py-2 bg-white border border-slate-200 text-slate-600 text-[11px] font-black uppercase rounded-lg transition-all shadow-3xs hover:bg-slate-50 active:scale-95 cursor-pointer">
                             {wizFromAmpm}
                           </button>
                         </div>
                       </div>
 
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Shift End Time (To)</label>
-                        <div className="flex items-center gap-1.5 bg-white p-2 rounded-xl border border-slate-200/60 shadow-3xs">
+                      {/* TO PICKER */}
+                      <div className="bg-white border border-slate-200/60 rounded-2xl p-4 shadow-sm">
+                        <label className="text-[9px] uppercase font-black text-slate-400 tracking-widest mb-3 block">Shift End (To)</label>
+                        <div className="flex items-center gap-2 bg-slate-50/50 p-2.5 rounded-xl border border-slate-100">
                           <div className="flex flex-col items-center">
-                            <button type="button" onClick={() => setWizToHour(incrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
-                            <input ref={wizToHourRefCallback} type="text" value={wizToHour} onChange={(e) => handleHourChange(e.target.value, setWizToHour)} onBlur={() => handleHourBlur(wizToHour, setWizToHour, "05")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
-                            <button type="button" onClick={() => setWizToHour(decrementHourFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                            <button type="button" onClick={() => setWizToHour(incrementHourFunc)} className="text-slate-300 hover:text-slate-600 p-0.5 cursor-pointer transition-colors">▲</button>
+                            <input ref={wizToHourRefCallback} type="text" value={wizToHour} onChange={(e) => handleHourChange(e.target.value, setWizToHour)} onBlur={() => handleHourBlur(wizToHour, setWizToHour, "05")} className="w-10 text-center text-lg font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                            <button type="button" onClick={() => setWizToHour(decrementHourFunc)} className="text-slate-300 hover:text-slate-600 p-0.5 cursor-pointer transition-colors">▼</button>
                           </div>
-                          <span className="text-slate-300 font-black text-sm">:</span>
+                          <span className="text-slate-300 font-black text-lg mb-1">:</span>
                           <div className="flex flex-col items-center">
-                            <button type="button" onClick={() => setWizToMinute(incrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▲</button>
-                            <input ref={wizToMinRefCallback} type="text" value={wizToMinute} onChange={(e) => handleMinuteChange(e.target.value, setWizToMinute)} onBlur={() => handleMinuteBlur(wizToMinute, setWizToMinute, "00")} className="w-9 text-center text-sm font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
-                            <button type="button" onClick={() => setWizToMinute(decrementMinuteFunc)} className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer">▼</button>
+                            <button type="button" onClick={() => setWizToMinute(incrementMinuteFunc)} className="text-slate-300 hover:text-slate-600 p-0.5 cursor-pointer transition-colors">▲</button>
+                            <input ref={wizToMinRefCallback} type="text" value={wizToMinute} onChange={(e) => handleMinuteChange(e.target.value, setWizToMinute)} onBlur={() => handleMinuteBlur(wizToMinute, setWizToMinute, "00")} className="w-10 text-center text-lg font-black text-slate-800 focus:outline-none cursor-ns-resize bg-transparent" />
+                            <button type="button" onClick={() => setWizToMinute(decrementMinuteFunc)} className="text-slate-300 hover:text-slate-600 p-0.5 cursor-pointer transition-colors">▼</button>
                           </div>
-                          <button type="button" onClick={() => setWizToAmpm(wizToAmpm === "AM" ? "PM" : "AM")} className="ml-auto px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black uppercase rounded-lg transition-colors cursor-pointer">
+                          <button type="button" onClick={() => setWizToAmpm(wizToAmpm === "AM" ? "PM" : "AM")} className="ml-auto px-4 py-2 bg-white border border-slate-200 text-slate-600 text-[11px] font-black uppercase rounded-lg transition-all shadow-3xs hover:bg-slate-50 active:scale-95 cursor-pointer">
                             {wizToAmpm}
                           </button>
                         </div>
                       </div>
                     </div>
 
-                    <div className="space-y-2.5">
+                    <div className="space-y-3 pt-2">
                       <label className="text-[10px] uppercase font-bold text-slate-500 ml-1">Weekly Assigned Days</label>
-                      <div className="flex items-center p-1.5 bg-slate-200/40 rounded-2xl border border-slate-200/30 gap-1 overflow-x-auto">
+                      <div className="flex items-center p-2 bg-white border border-slate-200/60 rounded-2xl shadow-sm gap-1 overflow-x-auto">
                         {weekDays.map((day) => {
                           const isSelected = wizDays.includes(day);
                           return (
