@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import { useStore } from "../store";
 import { ZendentaLogo } from "./ZendentaLogo";
+import { PremiumSelect } from "./ui/PremiumSelect";
 import { 
   Search, 
   Plus, 
@@ -1275,7 +1276,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                       activePatient.riskLevel === "High" ? "bg-red-500 animate-pulse" : 
                       activePatient.riskLevel === "Moderate" ? "bg-amber-500" : "bg-emerald-500"
                     }`} />
-                    <select
+                    <PremiumSelect
                       value={activePatient.riskLevel || "Low"}
                       onChange={(e) => updatePatient(activePatient.id, { riskLevel: e.target.value as any })}
                       className="text-xs font-black text-slate-800 focus:outline-none bg-transparent cursor-pointer"
@@ -1283,7 +1284,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                       <option value="Low">Low Risk</option>
                       <option value="Moderate">Moderate</option>
                       <option value="High">High Risk</option>
-                    </select>
+                    </PremiumSelect>
                   </div>
                 </div>
 
@@ -1651,7 +1652,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                         <div className="grid grid-cols-2 gap-3 pb-1">
                           <div className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-400 block uppercase">Spontaneous Pain</label>
-                            <select
+                            <PremiumSelect
                               value={activeCase.spontaneousPain}
                               onChange={(e) => updateEndoCase({ spontaneousPain: e.target.value as any })}
                               className="w-full bg-white p-2 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-400"
@@ -1660,11 +1661,11 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                               <option value="Mild">Mild / Intermittent</option>
                               <option value="Moderate">Moderate throbbing</option>
                               <option value="Severe">Severe pulsing</option>
-                            </select>
+                            </PremiumSelect>
                           </div>
                           <div className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-400 block uppercase">Tooth Number</label>
-                            <select
+                            <PremiumSelect
                               value={activeCase.toothNumber}
                               onChange={(e) => updateEndoCase({ toothNumber: Number(e.target.value) })}
                               className="w-full bg-white p-2 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:ring-1 focus:ring-blue-400"
@@ -1672,7 +1673,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                               {[11,12,13,14,15,16,17,18,21,22,23,24,25,26,27,28,31,32,33,34,35,36,37,38,41,42,43,44,45,46,47,48].map((tooth) => (
                                 <option key={tooth} value={tooth}>FDI #{tooth}</option>
                               ))}
-                            </select>
+                            </PremiumSelect>
                           </div>
                         </div>
 
@@ -1722,7 +1723,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                         
                         <div className="space-y-1.5">
                           <label className="text-[9px] font-bold text-slate-400 block uppercase">Pulp Diagnosis</label>
-                          <select
+                          <PremiumSelect
                             value={activeCase.pulpDiagnosis}
                             onChange={(e) => updateEndoCase({ pulpDiagnosis: e.target.value as any })}
                             className="w-full bg-white p-2.5 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
@@ -1733,12 +1734,12 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                             <option value="Necrotic pulp">Necrotic pulp (Non-vital structure)</option>
                             <option value="Previously treated">Previously treated obturated canal</option>
                             <option value="Previously initiated therapy">Previously initiated temporary therapy</option>
-                          </select>
+                          </PremiumSelect>
                         </div>
 
                         <div className="space-y-1.5">
                           <label className="text-[9px] font-bold text-slate-400 block uppercase">Apical Diagnosis</label>
-                          <select
+                          <PremiumSelect
                             value={activeCase.apicalDiagnosis}
                             onChange={(e) => updateEndoCase({ apicalDiagnosis: e.target.value as any })}
                             className="w-full bg-white p-2.5 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
@@ -1749,7 +1750,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                             <option value="Acute apical abscess">Acute apical abscess (Swelling, pain intensity)</option>
                             <option value="Chronic apical abscess">Chronic apical abscess (Draining sinus tract)</option>
                             <option value="Condensing osteitis">Condensing osteitis</option>
-                          </select>
+                          </PremiumSelect>
                         </div>
                       </div>
 
@@ -1864,7 +1865,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                         </div>
                         <div className="space-y-1 shrink-0 w-20">
                           <label className="text-[8px] font-black text-slate-400 uppercase block">File Choice</label>
-                          <select
+                          <PremiumSelect
                             value={newFileSize}
                             onChange={(e) => setNewFileSize(e.target.value)}
                             className="w-full bg-white p-2 border border-slate-200 rounded-lg text-xs font-bold text-indigo-700"
@@ -1875,7 +1876,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                             <option value="#30">#30</option>
                             <option value="#35">#35</option>
                             <option value="#40">#40</option>
-                          </select>
+                          </PremiumSelect>
                         </div>
                         <button
                           type="button"
@@ -1899,7 +1900,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                         <div className="space-y-2 text-xs">
                           <div className="flex flex-col sm:flex-row gap-2 justify-between sm:items-center w-full">
                             <span className="text-slate-500 font-semibold shrink-0">Primary Chemical:</span>
-                            <select
+                            <PremiumSelect
                               value={activeCase.irrigationProtocol.sodiumHypo}
                               onChange={(e) => updateEndoCase({
                                 irrigationProtocol: { ...activeCase.irrigationProtocol, sodiumHypo: e.target.value }
@@ -1909,7 +1910,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                               <option value="5.25% NaOCl">5.25% Sodium Hypochlorite (Max dissolution)</option>
                               <option value="2.5% NaOCl">2.5% Sodium Hypochlorite</option>
                               <option value="Normal Saline">Normal Saline (Sterile water)</option>
-                            </select>
+                            </PremiumSelect>
                           </div>
 
                           <div className="flex flex-wrap gap-x-4 gap-y-1.5 pt-1">
@@ -1939,7 +1940,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
 
                           <div className="flex flex-col sm:flex-row gap-2 justify-between sm:items-center pt-2 border-t border-slate-200 w-full">
                             <span className="text-slate-500 font-semibold shrink-0">Activation Protocol:</span>
-                            <select
+                            <PremiumSelect
                               value={activeCase.irrigationProtocol.activation}
                               onChange={(e) => updateEndoCase({
                                 irrigationProtocol: { ...activeCase.irrigationProtocol, activation: e.target.value }
@@ -1950,7 +1951,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                               <option value="EndoActivator Sonic Activation">Sonic Active (EndoActivator)</option>
                               <option value="Ultrasonic activation">Ultrasonic activation (PUI)</option>
                               <option value="Passive">Manual dynamic activation</option>
-                            </select>
+                            </PremiumSelect>
                           </div>
                         </div>
                       </div>
@@ -1965,7 +1966,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                         <div className="space-y-2 text-xs">
                           <div className="flex flex-col sm:flex-row gap-2 justify-between sm:items-center w-full">
                             <span className="text-slate-500 font-semibold shrink-0">Material Dress:</span>
-                            <select
+                            <PremiumSelect
                               value={activeCase.intracanalMedication.material}
                               onChange={(e) => updateEndoCase({
                                 intracanalMedication: { ...activeCase.intracanalMedication, material: e.target.value }
@@ -1976,7 +1977,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                               <option value="Triple Antibiotic Paste (TAP)">Triple Antibiotic Paste (TAP)</option>
                               <option value="Ledermix">Ledermix paste</option>
                               <option value="None">None (Obturate immediate)</option>
-                            </select>
+                            </PremiumSelect>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2 pt-1">
@@ -2017,7 +2018,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3.5 text-xs">
                         <div className="space-y-1">
                           <label className="text-[8px] font-bold text-slate-400 uppercase block">Obturation Technique</label>
-                          <select
+                          <PremiumSelect
                             value={activeCase.obturationDetails.technique}
                             onChange={(e) => updateEndoCase({
                               obturationDetails: { ...activeCase.obturationDetails, technique: e.target.value }
@@ -2028,12 +2029,12 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                             <option value="Single Cone">Single Cone hydraulic seal</option>
                             <option value="Lateral Compaction">Cold Lateral Compaction</option>
                             <option value="Carrier-based">Carrier-based obturation</option>
-                          </select>
+                          </PremiumSelect>
                         </div>
 
                         <div className="space-y-1">
                           <label className="text-[8px] font-bold text-slate-400 uppercase block">Root Canal Sealer</label>
-                          <select
+                          <PremiumSelect
                             value={activeCase.obturationDetails.sealerType}
                             onChange={(e) => updateEndoCase({
                               obturationDetails: { ...activeCase.obturationDetails, sealerType: e.target.value }
@@ -2043,7 +2044,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                             <option value="Bioceramic Sealer">Bioceramic hydraulic Sealer</option>
                             <option value="AH Plus Resin Sealer">AH Plus Epoxy Resin Sealer</option>
                             <option value="Zinc Oxide Eugenol">Zinc Oxide Eugenol sealer</option>
-                          </select>
+                          </PremiumSelect>
                         </div>
 
                         <div className="space-y-1">
@@ -2174,7 +2175,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5 text-xs">
                         <label className="text-[9px] font-bold text-slate-400 block uppercase">Bonded Bracket System</label>
-                        <select
+                        <PremiumSelect
                           value={ortho.bracketSystem}
                           onChange={(e) => updateOrthodonticRecord({ bracketSystem: e.target.value })}
                           className="w-full bg-white p-2 border border-slate-200 rounded-xl font-bold"
@@ -2183,12 +2184,12 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                           <option value="Damon Self-Ligating Metal">Damon Self-Ligating frictionless brackets</option>
                           <option value="Standard Stainless Buccal">Standard Metal SS Brackets</option>
                           <option value="Invisalign Clear Aligners">Clear Aligners system tray set</option>
-                        </select>
+                        </PremiumSelect>
                       </div>
 
                       <div className="space-y-1.5 text-xs">
                         <label className="text-[9px] font-bold text-slate-400 block uppercase">Active wire and tension configuration</label>
-                        <select
+                        <PremiumSelect
                           value={ortho.currentWire}
                           onChange={(e) => updateOrthodonticRecord({ currentWire: e.target.value })}
                           className="w-full bg-white p-2 border border-slate-200 rounded-xl font-bold text-indigo-650 font-mono"
@@ -2197,7 +2198,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                           <option value="0.018 NiTi Round Archwire">0.018 NiTi Round (Active tooth movement)</option>
                           <option value="0.019 x 0.025 SS Rectangular">0.019 x 0.025 Stainless Steel (Torque control)</option>
                           <option value="0.016 x 0.022 NiTi Rectangular">0.016 x 0.022 NiTi Rectangular</option>
-                        </select>
+                        </PremiumSelect>
                       </div>
                     </div>
 
@@ -2214,7 +2215,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                       </div>
                       <div className="space-y-1 text-xs">
                         <label className="text-[9px] font-bold text-slate-400 block uppercase">BITE compliance Score</label>
-                        <select
+                        <PremiumSelect
                           value={ortho.complianceScore}
                           onChange={(e) => updateOrthodonticRecord({ complianceScore: e.target.value as any })}
                           className="w-full bg-white border border-slate-200 p-2 rounded-xl text-slate-705"
@@ -2223,7 +2224,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                           <option value="Good">Good compliance</option>
                           <option value="Fair">Fair (Needs reminder)</option>
                           <option value="Poor">Poor compliance (Risk of relapse)</option>
-                        </select>
+                        </PremiumSelect>
                       </div>
                       <div className="space-y-1 text-xs">
                         <label className="text-[9px] font-bold text-slate-400 block uppercase">Jaw alignment parameters</label>
@@ -2315,7 +2316,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-slate-400 block uppercase">Bleeding checking Index</label>
-                        <select
+                        <PremiumSelect
                           value={perio.bleedingIndices}
                           onChange={(e) => updatePeriodontalRecord({ bleedingIndices: e.target.value as any })}
                           className="w-full bg-white border border-slate-200 p-2 rounded-xl text-center font-semibold"
@@ -2323,12 +2324,12 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                           <option value="None">None (Pink tight gingival mucosa)</option>
                           <option value="Localized">Localized (Bleeding at pocket probe #18, #36)</option>
                           <option value="Generalized">Generalized (Active spontaneous bleeding)</option>
-                        </select>
+                        </PremiumSelect>
                       </div>
 
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-slate-400 block uppercase">Tooth Mobility Index</label>
-                        <select
+                        <PremiumSelect
                           value={perio.mobilityIndex}
                           onChange={(e) => updatePeriodontalRecord({ mobilityIndex: e.target.value as any })}
                           className="w-full bg-white border border-slate-200 p-2 rounded-xl text-center font-semibold"
@@ -2337,7 +2338,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                           <option value="Grade I">Grade I (Horizontal movement &lt; 1mm)</option>
                           <option value="Grade II">Grade II (Horizontal movement &gt; 1mm)</option>
                           <option value="Grade III">Grade III (Vertical mobility - tooth danger)</option>
-                        </select>
+                        </PremiumSelect>
                       </div>
 
                       <div className="space-y-1">
@@ -2525,7 +2526,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                       {/* Behavior Compliance score */}
                       <div className="bg-slate-50 p-4 rounded-3xl border border-slate-150/40 space-y-3">
                         <label className="text-[10px] font-black text-slate-850 block uppercase tracking-wider">Clinical Behavioral Score (Frankl Scale)</label>
-                        <select
+                        <PremiumSelect
                           value={ped.behavioralScore}
                           onChange={(e) => updatePediatricNotes({ behavioralScore: e.target.value as any })}
                           className="w-full bg-white border border-slate-200 p-2 rounded-xl text-xs font-bold text-slate-705 focus:outline-none"
@@ -2534,7 +2535,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                           <option value="Cooperative">Cooperative (+3, Shy but complies completely)</option>
                           <option value="Fearful">Fearful (-2, Crying but treated safely)</option>
                           <option value="Uncooperative">Uncooperative (-1, Refused access, sedatives needed)</option>
-                        </select>
+                        </PremiumSelect>
                       </div>
                     </div>
 
@@ -2720,7 +2721,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
 
                           <div className="flex items-center gap-2.5">
                             <span className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider">Lab Status</span>
-                            <select
+                            <PremiumSelect
                               value={pr.labStatus}
                               onChange={(e) => updateProstheticLabStatus(activePatient.id, pr.id, e.target.value as LabStatus)}
                               className={`text-[11px] font-bold py-1.5 px-3 rounded-xl border focus:outline-none transition-all cursor-pointer shadow-sm ${
@@ -2734,7 +2735,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                               {["Sent to Lab", "In Fabrication", "Received from Lab", "Adjusted", "Fitted"].map(st => (
                                 <option key={st} value={st} className="bg-white text-slate-850">{st}</option>
                               ))}
-                            </select>
+                            </PremiumSelect>
                           </div>
                         </div>
 
@@ -3210,7 +3211,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-slate-500">System Risk Level</label>
-                  <select
+                  <PremiumSelect
                     value={newPatientRiskRef}
                     onChange={(e) => setNewPatientRiskRef(e.target.value as any)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white"
@@ -3218,7 +3219,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                     <option value="Low">Low Risk</option>
                     <option value="Moderate">Moderate Risk</option>
                     <option value="High">High Risk</option>
-                  </select>
+                  </PremiumSelect>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-slate-500">Drug Allergies</label>
@@ -3406,7 +3407,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] uppercase font-bold text-slate-500">Extraction nature</label>
-                    <select
+                    <PremiumSelect
                       value={extractionType}
                       onChange={(e) => setExtractionType(e.target.value as any)}
                       className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700"
@@ -3414,11 +3415,11 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                       <option value="Simple">Simple</option>
                       <option value="Surgical">Surgical</option>
                       <option value="Impaction">Impaction</option>
-                    </select>
+                    </PremiumSelect>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] uppercase font-bold text-slate-500">Anatomy Complexity</label>
-                    <select
+                    <PremiumSelect
                       value={extractionComplexity}
                       onChange={(e) => setExtractionComplexity(e.target.value as any)}
                       className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700"
@@ -3426,7 +3427,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                       <option value="Low">Low (Root Fused)</option>
                       <option value="Medium">Medium</option>
                       <option value="High">High (Impaction)</option>
-                    </select>
+                    </PremiumSelect>
                   </div>
                 </div>
 
@@ -3478,7 +3479,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] uppercase font-bold text-slate-500">Material Option</label>
-                    <select
+                    <PremiumSelect
                       value={prostheticType}
                       onChange={(e) => setProstheticType(e.target.value as any)}
                       className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700"
@@ -3488,7 +3489,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                       <option value="Porcelain Fused Metal">PFM Core</option>
                       <option value="Bridge">Dental Bridge</option>
                       <option value="Denture">Removable Denture</option>
-                    </select>
+                    </PremiumSelect>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] uppercase font-bold text-slate-500">Fabrication lab</label>
@@ -3581,7 +3582,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
 
               <div className="space-y-1">
                 <label className="text-[10px] uppercase font-bold text-slate-500">Method</label>
-                <select
+                <PremiumSelect
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value as any)}
                   className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-700"
@@ -3589,7 +3590,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                   <option value="Cash">Cash</option>
                   <option value="Card">Card Checkout</option>
                   <option value="Bank Transfer">Bank Wire Transfer</option>
-                </select>
+                </PremiumSelect>
               </div>
 
               <button
@@ -3645,7 +3646,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-slate-500">Gender</label>
-                  <select
+                  <PremiumSelect
                     value={editPatientGender}
                     onChange={(e) => setEditPatientGender(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-semibold"
@@ -3653,11 +3654,11 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
-                  </select>
+                  </PremiumSelect>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-slate-500">Risk Level</label>
-                  <select
+                  <PremiumSelect
                     value={editPatientRiskLevel}
                     onChange={(e) => setEditPatientRiskLevel(e.target.value as any)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-bold"
@@ -3665,7 +3666,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                     <option value="Low">Low Risk</option>
                     <option value="Moderate">Moderate Risk</option>
                     <option value="High">High Risk</option>
-                  </select>
+                  </PremiumSelect>
                 </div>
               </div>
 
@@ -3914,7 +3915,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                 <>
                   <div className="space-y-1 font-sans">
                     <label className="text-[10px] uppercase font-bold text-slate-500">Restoration Material</label>
-                    <select
+                    <PremiumSelect
                       value={recordMaterial}
                       onChange={(e) => setRecordMaterial(e.target.value as any)}
                       className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-semibold"
@@ -3922,7 +3923,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                       <option value="Composite">Composite resin</option>
                       <option value="Amalgam">Silver Amalgam</option>
                       <option value="GIC">Glass Ionomer (GIC)</option>
-                    </select>
+                    </PremiumSelect>
                   </div>
                   
                   <div className="space-y-1">
@@ -3962,7 +3963,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[10px] uppercase font-bold text-slate-500">Extraction Class</label>
-                      <select
+                      <PremiumSelect
                         value={recordExtType}
                         onChange={(e) => setRecordExtType(e.target.value as any)}
                         className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-semibold"
@@ -3970,11 +3971,11 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                         <option value="Simple">Simple extraction</option>
                         <option value="Surgical">Surgical extraction</option>
                         <option value="Impaction">Full wisdom Impaction</option>
-                      </select>
+                      </PremiumSelect>
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] uppercase font-bold text-slate-500">Clinical Complexity</label>
-                      <select
+                      <PremiumSelect
                         value={recordComplexity}
                         onChange={(e) => setRecordComplexity(e.target.value as any)}
                         className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-bold"
@@ -3982,7 +3983,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                         <option value="Low">Low</option>
                         <option value="Medium">Medium</option>
                         <option value="High">Severe/High</option>
-                      </select>
+                      </PremiumSelect>
                     </div>
                   </div>
                   <div className="space-y-1">
@@ -4003,7 +4004,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1 font-sans">
                       <label className="text-[10px] uppercase font-bold text-slate-500">Prosthetic Crown type</label>
-                      <select
+                      <PremiumSelect
                         value={recordProsType}
                         onChange={(e) => setRecordProsType(e.target.value as any)}
                         className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-semibold"
@@ -4013,11 +4014,11 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                         <option value="Porcelain Fused Metal">Porcelain Fused Metal</option>
                         <option value="Bridge">Prosthetic Bridge</option>
                         <option value="Denture">Removable Denture</option>
-                      </select>
+                      </PremiumSelect>
                     </div>
                     <div className="space-y-1 font-sans">
                       <label className="text-[10px] uppercase font-bold text-slate-500">Fabrication Lab status</label>
-                      <select
+                      <PremiumSelect
                         value={recordLabStatus}
                         onChange={(e) => setRecordLabStatus(e.target.value as any)}
                         className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-semibold"
@@ -4027,7 +4028,7 @@ export default function Patients({ selectedPatientId, onSelectPatient }: Patient
                         <option value="Received from Lab">Received</option>
                         <option value="Adjusted">Clinically Adjusted</option>
                         <option value="Fitted">Cemented / Fitted</option>
-                      </select>
+                      </PremiumSelect>
                     </div>
                   </div>
                   <div className="space-y-1">
