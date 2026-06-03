@@ -1855,7 +1855,12 @@ export default function Staff() {
                       <div className="text-center sm:text-left flex-1">
                         <h4 className="text-xl font-black text-slate-900 tracking-tight">{wizName || "Legal Name Pending"}</h4>
                         <span className="text-[11px] font-bold text-blue-600 bg-blue-50/80 border border-blue-200/50 px-3 py-1 rounded-full inline-block mt-2 uppercase tracking-wider">
-                          {wizRole === "clinician" ? "Clinical Dentist" : wizRole === "admin" ? "Administrative Master" : "Front Desk Clerk"}
+                          {wizRole2 === "clinician" ? "Dentist Specialist" : 
+                           wizRole2 === "doctor" ? "Medical Doctor" :
+                           wizRole2 === "frontdesk" ? "Front Desk Officer" :
+                           wizRole2 === "receptionist" ? "Clinic Receptionist" :
+                           wizRole2 === "accountant" ? "Finance Accountant" :
+                           wizRole === "admin" ? "Administrative Master" : "Personnel Member"}
                         </span>
                         <p className="text-[11px] text-slate-400 mt-2 font-medium leading-relaxed">This photo will represent the staff member across visual teeth logs, billing actions, and schedule grids.</p>
                       </div>
